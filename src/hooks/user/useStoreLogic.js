@@ -1,7 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { productService } from '../../services/user/productService';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { productService } from "../../services/user/productService";
 
 export const useStoreLogic = () => {
   const [products, setProducts] = useState([]);
@@ -15,28 +13,14 @@ export const useStoreLogic = () => {
       const response = await productService.getAllProducts();
       const rawData = response.data || response;
 
-      const sanitizedData = Array.isArray(rawData) ? rawData.map(p => {
-        const imagePath = p.image_url || p.image || p.img || '';
-        
-        const cleanBaseUrl = API_URL?.replace(/\/$/, '') || ''; 
-        const cleanImagePath = imagePath.replace(/^\//, ''); 
-        const finalImgUrl = imagePath.startsWith('http') 
-               ? imagePath 
-               : imagePath === '' 
-                 ? ''
-                 : `${cleanBaseUrl}/${cleanImagePath}`;
-
-        return {
-          ...p,
-          id: p._id || p.id,
-          img: finalImgUrl
-        };
-      }) : [];
-
-      console.log("Data Produk Matang (Ready):", sanitizedData);
+      const sanitizedData = rawData.map((p) => ({
+        ...p,
+        id: p._id || p.id,
+        img: p.image_url || p.image || p.img, 
+      }));
       setProducts(sanitizedData);
     } catch (err) {
-      console.error("Gagal sanitasi produk:", err);
+      console.error("Gagal ambil produk:", err);
     } finally {
       setIsLoading(false);
     }
@@ -45,29 +29,42 @@ export const useStoreLogic = () => {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
-
-  const categories = ["Bread & Bakery", "Baking Needs", "Cooking", "Snacks", "Beverages", "Vegetables"];
+  const categories = useMemo(() => {
+    const allCats = products.map((p) => 
+      typeof p.category === 'object' ? p.category.name : p.category
+    );
+    return [...new Set(allCats)].filter(Boolean).sort();
+  }, [products]);
 
   const handleFilterChange = useCallback((cat) => {
-    setFilter(prev => prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]);
+    setFilter((prev) =>
+      prev.includes(cat) ? prev.filter((x) => x !== cat) : [...prev, cat],
+    );
+    setLimit(6);
   }, []);
 
   const filteredDataResult = useMemo(() => {
-    return filter.length === 0 
-      ? products 
-      : products.filter(p => filter.includes(p.category));
+    return filter.length === 0
+      ? products
+      : products.filter((p) => {
+          const categoryName = typeof p.category === 'object' ? p.category.name : p.category;
+          return filter.includes(categoryName);
+        });
   }, [filter, products]);
 
   return {
     filter,
-    categories,
+    categories, 
     isLoading,
     filteredData: filteredDataResult.slice(0, limit),
     totalCount: filteredDataResult.length,
     currentLimit: limit,
     handleFilterChange,
-    loadMore: () => setLimit(prev => prev + 3),
-    clearFilter: () => { setFilter([]); setLimit(6); },
-    refreshProducts: fetchProducts
+    loadMore: () => setLimit((prev) => prev + 3),
+    clearFilter: () => {
+      setFilter([]);
+      setLimit(6);
+    },
+    refreshProducts: fetchProducts,
   };
 };

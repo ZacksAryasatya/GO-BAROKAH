@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const ProductCard = ({ product }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { cartItems, addToCart } = useCart();
   const { user } = useAuth();
@@ -16,12 +17,10 @@ const ProductCard = ({ product }) => {
   const handleAddToCart = (e) => {
     e.stopPropagation(); 
     if (isInCart) return;
-
     if (!user) {
       toast.error('Login terlebih dahulu!');
       return;
     }
-
     addToCart(product);
     toast.success(`${product.name} masuk keranjang!`);
   };
@@ -31,9 +30,9 @@ const ProductCard = ({ product }) => {
       <div onClick={() => navigate(`/product/${product.id}`)} className="cursor-pointer flex-1 mb-16">
         <div className="aspect-square w-full flex items-center justify-center mb-6 overflow-hidden rounded-2xl border border-gray-50 bg-[#FBFBFB]">
           <img 
-            src={product.img} 
+            src={`${API_URL}${product.image_url || product.image}`} 
             alt={product.name} 
-            className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-700 ease-out" 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
             onError={(e) => { 
               e.target.onerror = null; 
               e.target.src = 'https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image'; 
@@ -44,7 +43,7 @@ const ProductCard = ({ product }) => {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-[#3A5A4D] font-black text-[9px] uppercase tracking-[0.25em] opacity-80">
-              {product.category || 'Organik'}
+             {typeof product.category === 'object' ? product.category.name : (product.category || 'Organik')}
             </span>
             <div className="h-[1px] w-3 bg-gray-200"></div>
           </div>
@@ -57,6 +56,7 @@ const ProductCard = ({ product }) => {
           </span>
         </div>
       </div>
+      
       <button 
         onClick={handleAddToCart}
         disabled={isInCart}

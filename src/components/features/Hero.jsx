@@ -1,54 +1,48 @@
-import { useNavigate } from 'react-router-dom'; 
-import petaniImg from '../../assets/img/petani.jpg'; 
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import petaniImg from "../../assets/img/petani.jpg";
 
 const Hero = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   return (
-    <section className="relative w-full h-[500px] overflow-hidden">
-    
-      <div 
-        className="w-full h-full"
-        style={{ 
-          backgroundImage: `url(${petaniImg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center' 
-        }}
-      >
-        
-        <div className="absolute inset-0 bg-black/40"></div>
-      </div>
-
-      
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-7xl mx-auto px-10 w-full">
-          <div className="max-w-2xl text-white space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-              Get the best quality <br />
-              products at the <span className="text-yellow-400">affordable prices</span>
+    <section className="relative w-full h-[85vh] bg-[#FBFBFB] overflow-hidden">
+      <div className="max-w-7xl mx-auto h-full px-6 lg:px-12 flex flex-col md:flex-row items-center gap-12">
+        <div className="flex-1 space-y-8 z-10">
+          <div className="space-y-4">
+            <h1 className="text-5xl lg:text-6xl font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
+              KUALITAS <br />
+              <span className="text-[#2D5A43]">UTAMA,</span> <br />
+              HARGA <br /><span className="text-[#2D5A43]">BAROKAH.</span>
             </h1>
-            
-            <p className="text-lg text-gray-200 max-w-lg leading-relaxed">
-              We have prepared a special price for your budget to buy the best products.
+            <p className="text-gray-500 text-[13px] font-medium max-w-sm leading-relaxed">
+              Penyedia bahan pangan segar kualitas unggulan untuk kebutuhan bisnis dan keluarga Anda. Segar setiap hari, jujur dalam harga, dan terpercaya dalam pelayanan.
             </p>
+          </div>
 
-            
-            <button 
-              onClick={() => navigate('/store')}
-              className="bg-white text-black px-10 py-3 rounded-md font-bold text-sm hover:bg-[#2D5A43] hover:text-white transition-all active:scale-95 shadow-lg"
-            >
-              Shop Now
-            </button>
+          <button
+            onClick={() => navigate("/store")}
+            className="flex items-center gap-4 group"
+          >
+            <div className="bg-gray-900 text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest group-hover:bg-[#2D5A43] transition-all duration-300">
+              Belanja Sekarang
+            </div>
+            <div className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#2D5A43] group-hover:text-[#2D5A43] transition-all">
+              <ArrowRight size={18} />
+            </div>
+          </button>
+        </div>
+        <div className="flex-1 h-[50%] md:h-[70%] w-full relative flex items-center justify-center">
+          <div className="w-full h-full max-w-lg md:max-w-none rounded-[3rem] overflow-hidden border-8 border-[#FBFBFB]">
+            <img
+              src={petaniImg}
+              alt="Fresh Produce"
+              className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700"
+            />
           </div>
         </div>
       </div>
-
-      
-      <div className="absolute bottom-8 left-10 flex gap-2">
-        <div className="w-12 h-1 bg-yellow-400 rounded-full"></div>
-        <div className="w-4 h-1 bg-white/30 rounded-full"></div>
-        <div className="w-4 h-1 bg-white/30 rounded-full"></div>
-      </div>
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F6F8F7] -z-10 hidden md:block"></div>
     </section>
   );
 };

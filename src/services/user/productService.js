@@ -3,7 +3,7 @@ import api from '../../utils/api';
 export const productService = {
   getAllProducts: async (params = {}) => {
     try {
-      const response = await api.get('/products', { params });
+      const response = await api.get('/api/products', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -12,7 +12,7 @@ export const productService = {
 
   getProductById: async (id) => {
     try {
-      const response = await api.get(`/products/${id}`);
+      const response = await api.get(`/api/products/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

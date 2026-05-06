@@ -1,7 +1,10 @@
-export const useProductFilter = (products, search, category) => {
+export const useProductFilter = (products, search, activeFilters) => {
   return products.filter((p) => {
-    const matchCat = category === "Semua" || p.category === category;
+    const productCat = p.category?.name || p.category; 
+
+    const matchCat = activeFilters.length === 0 || activeFilters.includes(productCat);
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+    
     return matchCat && matchSearch;
   });
 };

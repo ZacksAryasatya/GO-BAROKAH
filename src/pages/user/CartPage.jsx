@@ -115,6 +115,8 @@ const CartPage = () => {
 };
 
 const CartItem = ({ item, onIncrement, onDecrement, onRemove, onQuantityChange }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleChange = (e) => {
     const val = parseInt(e.target.value);
     if (!isNaN(val) && val > 0) {
@@ -124,16 +126,20 @@ const CartItem = ({ item, onIncrement, onDecrement, onRemove, onQuantityChange }
 
   return (
     <div className="group relative flex flex-col sm:flex-row items-center gap-6 bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <div className="w-32 h-32 bg-[#FBFBFB] rounded-3xl p-4 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-50">
+      <div className="w-32 h-32 bg-[#FBFBFB] rounded-3xl p-0 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-50">
         <img
-          src={item.img}
+          src={`${API_URL}${item.image_url || item.image}`}
           alt={item.name}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => { 
+            e.target.onerror = null; 
+            e.target.src = 'https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image'; 
+          }}
         />
       </div>
       <div className="flex-grow text-center sm:text-left">
         <span className="text-[#2D5A43] font-black text-[9px] uppercase tracking-[0.2em] opacity-60">
-          {item.category || "Kategori"}
+          {typeof item.category === 'object' ? item.category.name : (item.category || "Kategori")}
         </span>
         <h3 className="text-lg font-black text-gray-900 tracking-tight mt-1">
           {item.name}

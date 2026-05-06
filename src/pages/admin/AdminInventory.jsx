@@ -21,8 +21,20 @@ import { useAdminProducts } from "../../hooks/admin/useAdminProducts";
 import { formatRupiah } from "../../utils/formatters";
 
 const AdminInventory = () => {
-  const { products, isLoading, actionLoading, handleCreate, handleUpdate, handleDelete } =
-    useAdminProducts();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const {
+    products,
+    categories,
+    types,
+    isLoading,
+    actionLoading,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    handleAddCategory,
+    handleAddType,
+  } = useAdminProducts();
+
   const [search, setSearch] = useState("");
   const [activecat, setActivecat] = useState("Semua");
   const [page, setPage] = useState(1);
@@ -46,7 +58,8 @@ const AdminInventory = () => {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchCat = activecat === "Semua" || p.category === activecat;
+      const pCategoryName = p.category?.name || p.category;
+      const matchCat = activecat === "Semua" || pCategoryName === activecat;
       const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
       return matchCat && matchSearch;
     });
@@ -135,6 +148,7 @@ const AdminInventory = () => {
               onSearchChange={(v) => setSearch(v)}
               activecat={activecat}
               onCatChange={(v) => setActivecat(v)}
+              categories={categories}
             />
           </div>
         </div>
@@ -182,9 +196,13 @@ const AdminInventory = () => {
                               <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center">
                                 {p.image_url || p.image ? (
                                   <img
-                                    src={p.image_url || p.image}
+                                    src={`${API_URL}${p.image_url || p.image}`}
                                     alt={p.name}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.target.src =
+                                        "https://via.placeholder.com/150?text=No+Image";
+                                    }}
                                   />
                                 ) : (
                                   <ImageIcon
@@ -197,6 +215,9 @@ const AdminInventory = () => {
                                 <p className="font-bold text-slate-900 text-xs uppercase truncate">
                                   {p.name}
                                 </p>
+                                <p className="text-[9px] text-slate-400 font-medium truncate w-40">
+                                  {p.description || "No description available"}
+                                </p>
                                 <p className="text-[9px] text-slate-400 font-bold uppercase">
                                   ID: {String(p.id).slice(-6)}
                                 </p>
@@ -205,7 +226,7 @@ const AdminInventory = () => {
                           </td>
                           <td className="px-8 py-4">
                             <span className="text-[9px] font-black text-blue-600 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100/50 uppercase">
-                              {p.category || "General"}
+                              {p.category?.name || p.category}
                             </span>
                           </td>
                           <td className="px-8 py-4">
@@ -216,7 +237,7 @@ const AdminInventory = () => {
                                 {p.stock}
                               </span>
                               <span className="text-[9px] text-slate-400 font-bold uppercase">
-                                {p.unit || "Unit"}
+                                {p.type?.name || p.unit}
                               </span>
                             </div>
                           </td>
@@ -299,7 +320,11 @@ const AdminInventory = () => {
         <ProductModal
           mode={modalMode}
           initial={selected}
+          categories={categories}
+          types={types}
           onClose={() => setModalMode(null)}
+          onAddCategory={handleAddCategory}
+          onAddType={handleAddType}
           onSubmit={
             modalMode === "create"
               ? handleCreate

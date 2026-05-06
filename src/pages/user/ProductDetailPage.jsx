@@ -88,7 +88,7 @@ const ProductDetailPage = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-[#2D5A43] font-black text-[10px] uppercase tracking-[0.3em] mb-4">
-              {product.category}
+              {product.category?.name || product.category }
             </span>
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tighter leading-tight">
               {product.name}

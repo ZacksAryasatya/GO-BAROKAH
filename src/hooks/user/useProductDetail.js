@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, isRouteErrorResponse } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { productService } from '../../services/user/productService';
 
@@ -27,6 +27,7 @@ export const useProductDetail = () => {
       const sanitizedProduct = {
         ...p,
         id: p._id || p.id,
+        category: typeof p.category === 'object' ? p.category.name : p.category,
         img: imagePath.startsWith('http') 
              ? imagePath 
              : imagePath === '' 
@@ -65,8 +66,12 @@ export const useProductDetail = () => {
 
   const onAddToCart = () => {
     if (!product || quantity === '') return;
+    const itemToAdd = {
+    ...product,
+    id: product._id || product.id 
+  };
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(itemToAdd);
     }
   };
 

@@ -18,13 +18,9 @@ const AdminSidebar = ({ alertCount = 0 }) => {
     <>
       <aside className="w-64 h-screen sticky top-0 flex-shrink-0 flex flex-col bg-[#1a4d2e] px-5 py-8 font-sans border-r border-white/5">
         <header className="px-2 mb-10 flex-shrink-0">
-          <h1 className="text-2xl font-black tracking-tighter text-white uppercase leading-none">
-            UD. BAROKAH
-          </h1>
+          <h1 className="text-2xl font-black tracking-tighter text-white uppercase leading-none">UD. BAROKAH</h1>
           <div className="h-[4px] w-12 bg-[#f5c518] rounded-full mt-2" />
-          <p className="text-[9px] text-emerald-400/60 font-black mt-3 uppercase tracking-[0.3em]">
-            Admin Management
-          </p>
+          <p className="text-[9px] text-emerald-400/60 font-black mt-3 uppercase tracking-[0.3em]">Admin Management</p>
         </header>
 
         <nav className="flex flex-col gap-1.5 mb-auto">
@@ -62,7 +58,7 @@ const AdminSidebar = ({ alertCount = 0 }) => {
           )}
 
           <NavLink to="/admin/profile" className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group border ${isActive ? "bg-white/10 border-white/20" : "hover:bg-white/5 border-transparent"}`}>
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-black text-xs shadow-md">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-black text-xs shadow-md uppercase">
               {initials}
             </div>
             <div className="flex-1 min-w-0 text-left">
@@ -71,20 +67,13 @@ const AdminSidebar = ({ alertCount = 0 }) => {
             </div>
           </NavLink>
 
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-[0.2em] group"
-          >
+          <button onClick={() => setShowLogoutModal(true)} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-[0.2em]">
             <LogOut size={14} strokeWidth={3} />
             <span>Keluar</span>
           </button>
         </footer>
       </aside>
-      <LogoutModal 
-        isOpen={showLogoutModal} 
-        onClose={() => setShowLogoutModal(false)} 
-        onConfirm={logout} 
-      />
+      <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={logout} />
     </>
   );
 };
