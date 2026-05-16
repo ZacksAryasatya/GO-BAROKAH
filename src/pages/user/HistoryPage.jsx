@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import { ClipboardList, Eye, ShoppingBag } from "lucide-react";
 import { useHistoryLogic } from "../../hooks/user/useHistoryLogic";
 import Button from "../../components/common/Button";
@@ -35,21 +35,20 @@ const HistoryPage = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl md:rounded-[32px] p-5 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[500px] md:min-h-[600px]">
-      <header className="mb-6 md:mb-10 text-center md:text-left">
-        <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight uppercase italic">Riwayat Pesanan</h3>
-        <p className="text-xs md:text-sm text-gray-400 mt-1 font-bold uppercase tracking-widest">Pantau status belanja Anda</p>
+    <div className="bg-white rounded-[32px] p-10 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[600px]">
+      <header className="mb-10">
+        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Riwayat Pesanan</h3>
+        <p className="text-sm text-gray-400 mt-1 font-normal">Pantau status dan riwayat belanja Anda di sini</p>
       </header>
 
-      {/* Tabs Responsif: Scroll di mobile, Flex-wrap di desktop */}
-      <nav className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap">
+      <nav className="flex flex-wrap gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
         {statuses.map((status) => (
           <Button
             key={status}
             onClick={() => setActiveTab(status)}
             variant={activeTab === status ? "primary" : "ghost"}
-            className={`px-5 md:px-7 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 rounded-xl ${
-              activeTab === status ? "shadow-md scale-[1.02]" : "text-gray-400 hover:bg-gray-100"
+            className={`px-7 py-3 text-[12px] whitespace-nowrap transition-all duration-300 ${
+              activeTab === status ? "shadow-lg scale-[1.02]" : "text-gray-400 hover:bg-gray-100"
             }`}
           >
             {status}
@@ -57,83 +56,75 @@ const HistoryPage = () => {
         ))}
       </nav>
 
-      <section className="space-y-6 md:space-y-8">
+      <section className="space-y-8">
         {orders.length > 0 ? (
           orders.map(({ id, created_at, status, items, total_amount }) => (
-            <div key={id} className="bg-white border border-gray-100 rounded-2xl md:rounded-[28px] overflow-hidden hover:shadow-[0_10px_40px_rgb(0,0,0,0.04)] transition-all duration-500 group">
-              
-              {/* Header Card Responsif */}
-              <div className="px-5 md:px-7 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#F8FAF9]/50 border-b border-gray-50 gap-3">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="bg-[#3A5A4D] p-2.5 md:p-3 rounded-xl text-white shadow-lg shadow-green-900/10 shrink-0">
-                    <ClipboardList size={18} />
+            <div key={id} className="bg-white border border-gray-100 rounded-[28px] overflow-hidden hover:shadow-[0_10px_40px_rgb(0,0,0,0.03)] transition-all duration-500 group">
+              <div className="px-7 py-5 flex justify-between items-center bg-[#F8FAF9]/50 border-b border-gray-50">
+                <div className="flex items-center gap-4">
+                  <div className="bg-[#3A5A4D] p-3 rounded-xl text-white shadow-lg shadow-green-900/10">
+                    <ClipboardList size={20} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-black text-[13px] md:text-[14px] text-gray-900 leading-none truncate uppercase tracking-tighter">#{id.slice(-8)}</p>
-                    <p className="text-[10px] md:text-[11px] text-gray-400 font-bold mt-1.5 uppercase tracking-wider">
-                      {new Date(created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                  <div>
+                    <p className="font-bold text-[14px] text-gray-900 leading-none">{id}</p>
+                    <p className="text-[12px] text-gray-400 font-medium mt-1.5">
+                      {new Date(created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                     </p>
                   </div>
                 </div>
-                <span className={`text-[9px] md:text-[10px] px-3 py-1 rounded-lg font-black uppercase tracking-[0.15em] ${getStatusColor(status)}`}>
+                <span className={`text-[11px] px-4 py-1.5 rounded-xl font-bold uppercase tracking-wider ${getStatusColor(status)}`}>
                   {status}
                 </span>
               </div>
 
-              {/* Items List - Hanya muncul 2 item pertama di mobile untuk ringkas */}
-              <div className="px-6 md:px-8 py-5 space-y-3">
-                {items.slice(0, 3).map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-[12px] md:text-[13px]">
-                    <div className="flex items-center gap-2 min-w-0 pr-4">
-                      <div className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="text-slate-600 font-bold uppercase tracking-tight truncate">{item.name}</span>
-                      <span className="text-slate-400 text-[10px] font-black shrink-0">x{item.qty}</span>
+              <div className="px-8 py-6 space-y-4">
+                {items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-[14px]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-200" />
+                      <span className="text-gray-600 font-medium">{item.name}</span>
+                      <span className="text-gray-400 text-xs">x{item.qty}</span>
                     </div>
-                    <span className="font-black text-slate-900 shrink-0 italic">{formatCurrency(item.price * item.qty)}</span>
+                    <span className="font-bold text-gray-900">{formatCurrency(item.price * item.qty)}</span>
                   </div>
                 ))}
-                {items.length > 3 && (
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">+ {items.length - 3} produk lainnya</p>
-                )}
               </div>
 
-              {/* Footer Card Responsif */}
-              <div className="px-6 md:px-8 py-5 bg-[#F8FAF9]/30 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-5">
-                <div className="text-center sm:text-left">
-                  <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">Total Transaksi</p>
-                  <p className="text-lg md:text-xl font-black text-[#3A5A4D] tracking-tighter italic">{formatCurrency(total_amount)}</p>
+              <div className="px-8 py-6 bg-[#F8FAF9]/30 border-t border-gray-50 flex justify-between items-center">
+                <div>
+                  <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total Pesanan</p>
+                  <p className="text-xl font-black text-[#3A5A4D] tracking-tight">{formatCurrency(total_amount)}</p>
                 </div>
-                <div className="flex gap-2 md:gap-3">
+                <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => handleOpenDetail(id)} 
-                    className="flex-1 sm:flex-none px-4 md:px-6 py-2.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl"
+                    className="px-6 py-3 text-[12px] flex items-center gap-2"
                   >
-                    <Eye size={14} /> Detail
+                    <Eye size={16} /> Detail
                   </Button>
                   <Button
                     variant="primary"
-                    className="flex-1 sm:flex-none px-5 md:px-7 py-2.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest rounded-xl"
+                    className="px-7 py-3 text-[12px]"
                     onClick={() => console.log("Beli lagi logic")}
                   >
-                    Re-Order
+                    Beli Lagi
                   </Button>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center text-center py-20 md:py-28 bg-white rounded-3xl border-2 border-dashed border-slate-100 px-6">
-            <div className="bg-slate-50 p-6 md:p-7 rounded-full mb-6 border border-slate-100 shadow-inner">
-              <ShoppingBag size={40} className="text-[#3A5A4D] opacity-20" />
+          <div className="flex flex-col items-center justify-center text-center py-28 bg-[#FDFDFD] rounded-[32px] border-2 border-dashed border-gray-100">
+            <div className="bg-white p-7 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-6 border border-gray-50">
+              <ShoppingBag size={48} className="text-[#3A5A4D] opacity-20" />
             </div>
-            <h4 className="text-lg md:text-xl font-black text-slate-900 tracking-tight uppercase italic">Kosong, Bos!</h4>
-            <p className="text-[11px] md:text-[12px] text-slate-400 max-w-[200px] md:max-w-xs mt-2 mb-8 font-bold uppercase tracking-widest leading-relaxed">Belum ada aktivitas belanja di kategori ini.</p>
-            <Button variant="primary" onClick={handleStartShopping} className="px-8 md:px-10 py-3.5 md:py-4 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-emerald-900/10">Mulai Belanja</Button>
+            <h4 className="text-xl font-bold text-gray-900 tracking-tight">Belum Ada Pesanan</h4>
+            <p className="text-[14px] text-gray-400 max-w-xs mt-2 mb-10 leading-relaxed">Sepertinya belum ada pesanan di kategori ini.</p>
+            <Button variant="primary" onClick={handleStartShopping} className="px-10 py-4 text-[13px]">Mulai Belanja</Button>
           </div>
         )}
       </section>
-
       <OrderDetailModal
         order={selectedOrder}
         isOpen={isModalOpen}

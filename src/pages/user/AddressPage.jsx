@@ -46,9 +46,9 @@ const AddressPage = () => {
 
   const getLabelIcon = (label) => {
     const l = label?.toLowerCase() || "";
-    if (l.includes("rumah")) return <Home size={14} className="md:size-[16px]" />;
-    if (l.includes("kantor")) return <Briefcase size={14} className="md:size-[16px]" />;
-    return <Map size={14} className="md:size-[16px]" />;
+    if (l.includes("rumah")) return <Home size={16} />;
+    if (l.includes("kantor")) return <Briefcase size={16} />;
+    return <Map size={16} />;
   };
 
   const openModal = (item = null) => {
@@ -86,27 +86,27 @@ const AddressPage = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl md:rounded-[32px] p-5 md:p-8 border border-gray-100 shadow-sm min-h-[500px] md:min-h-[600px]">
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 md:mb-10">
-        <div className="max-w-md">
-          <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight uppercase italic">
+    <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm min-h-[600px]">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div>
+          <h3 className="text-2xl font-black text-gray-900 tracking-tight">
             Alamat <span className="text-[#3A5A4D]">Pengiriman.</span>
           </h3>
-          <p className="text-[11px] md:text-sm text-gray-400 mt-1 font-bold uppercase tracking-widest">
-            Atur lokasi pengiriman pesanan Anda.
+          <p className="text-sm text-gray-400 mt-1 font-medium">
+            Atur ke mana pesanan Barokah Anda akan dikirim.
           </p>
         </div>
         <button
           onClick={() => openModal()}
-          className="w-full lg:w-auto flex items-center justify-center gap-2 bg-[#3A5A4D] hover:bg-[#2D463C] text-white px-6 py-4 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black tracking-[0.2em] transition-all active:scale-95 shadow-lg shadow-green-900/10"
+          className="flex items-center gap-2 bg-[#3A5A4D] hover:bg-[#2D463C] text-white px-6 py-3 rounded-2xl text-[12px] font-bold tracking-widest transition-all active:scale-95 shadow-lg shadow-green-900/10"
         >
-          <Plus size={16} strokeWidth={3} /> TAMBAH ALAMAT
+          <Plus size={18} /> TAMBAH ALAMAT
         </button>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {isLoading ? (
-          <div className="flex justify-center py-32 md:py-40">
+          <div className="flex justify-center py-40">
             <Loader2 className="animate-spin text-[#3A5A4D]" size={32} />
           </div>
         ) : addresses.length > 0 ? (
@@ -117,77 +117,69 @@ const AddressPage = () => {
             return (
               <div
                 key={itemId}
-                className={`group relative border rounded-2xl md:rounded-[24px] p-5 md:p-6 transition-all duration-300 ${
+                className={`group relative border rounded-[24px] p-6 transition-all duration-300 ${
                   isDefault
                     ? "border-[#3A5A4D] bg-[#FDFDFD] shadow-md shadow-green-900/5"
-                    : "border-gray-100 hover:border-gray-200 bg-white"
+                    : "border-gray-100 hover:border-gray-300 bg-white"
                 }`}
               >
-                <div className="flex flex-wrap justify-between items-start mb-5 gap-2">
-                  <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`p-1.5 md:p-2 rounded-lg md:rounded-xl ${isDefault ? "bg-[#3A5A4D] text-white" : "bg-gray-100 text-gray-500"}`}
+                      className={`p-2 rounded-xl ${isDefault ? "bg-[#3A5A4D] text-white" : "bg-gray-100 text-gray-500"}`}
                     >
                       {getLabelIcon(item.label)}
                     </div>
-                    <span className="font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-gray-400">
+                    <span className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400">
                       {item.label || "Alamat"}
                     </span>
                     {isDefault && (
-                      <span className="bg-[#E8F5EE] text-[#3A5A4D] text-[8px] md:text-[9px] px-2 md:px-3 py-1 rounded-md md:rounded-lg font-black uppercase tracking-tighter">
+                      <span className="bg-[#E8F5EE] text-[#3A5A4D] text-[9px] px-3 py-1 rounded-lg font-black uppercase tracking-tighter">
                         Utama
                       </span>
                     )}
                   </div>
                 </div>
                 
-                <div className="px-0 md:px-1 py-1 space-y-3">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <User size={14} className="text-[#3A5A4D] opacity-40 shrink-0 md:size-[16px]" />
-                    <span className="text-[14px] md:text-[15px] font-black text-slate-900 uppercase tracking-tight italic">
-                      {item.recipientName || "-"}
-                    </span>
+                <div className="px-1 py-2 space-y-3">
+                  <div className="flex items-center gap-4">
+                    <User size={16} className="text-[#3A5A4D] opacity-40 shrink-0" />
+                    <span className="text-[15px] font-bold text-gray-900">{item.recipientName || "-"}</span>
                   </div>
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <Phone size={14} className="text-[#3A5A4D] opacity-40 shrink-0 md:size-[16px]" />
-                    <span className="text-[12px] md:text-[14px] text-slate-600 font-bold tracking-tight">
-                      {item.recipientPhone || "-"}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <Phone size={16} className="text-[#3A5A4D] opacity-40 shrink-0" />
+                    <span className="text-[14px] text-gray-600 font-medium">{item.recipientPhone || "-"}</span>
                   </div>
-                  <div className="flex items-start gap-3 md:gap-4">
-                    <MapPin size={14} className="text-[#3A5A4D] opacity-40 shrink-0 mt-0.5 md:size-[16px]" />
-                    <span className="text-[12px] md:text-[14px] text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
-                      {item.addressDetail || "-"}
-                    </span>
+                  <div className="flex items-start gap-4">
+                    <MapPin size={16} className="text-[#3A5A4D] opacity-40 shrink-0 mt-0.5" />
+                    <span className="text-[14px] text-gray-500 leading-relaxed font-medium">{item.addressDetail || "-"}</span>
                   </div>
                 </div>
 
-                <div className="flex flex-row justify-between items-center pt-5 mt-4 border-t border-gray-100 gap-4">
-                  <div>
-                    {!isDefault && (
-                      <button
-                        onClick={() => handleSetDefault(itemId)}
-                        className="text-[9px] md:text-[10px] text-gray-400 hover:text-[#3A5A4D] font-black uppercase tracking-[0.15em] transition-colors"
-                      >
-                        Set Utama
-                      </button>
-                    )}
-                  </div>
+                <div className="flex flex-col sm:flex-row justify-between items-center pt-5 border-t border-gray-50 gap-4">
+                  {!isDefault ? (
+                    <button
+                      onClick={() => handleSetDefault(itemId)}
+                      className="text-[11px] text-gray-400 hover:text-[#3A5A4D] font-bold uppercase tracking-widest transition-colors"
+                    >
+                      Jadikan Utama
+                    </button>
+                  ) : <div />}
 
-                  <div className="flex gap-1 md:gap-2">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => openModal(item)}
-                      className="p-2 md:p-2.5 text-gray-400 hover:text-[#3A5A4D] hover:bg-emerald-50 rounded-lg md:rounded-xl transition-all"
-                      title="Edit"
+                      className="p-2.5 text-gray-400 hover:text-[#3A5A4D] hover:bg-gray-50 rounded-xl transition-all"
+                      title="Edit Alamat"
                     >
-                      <PencilLine size={16} className="md:size-[18px]" />
+                      <PencilLine size={18} />
                     </button>
                     <button
                       onClick={() => openDeleteConfirm(itemId)}
-                      className="p-2 md:p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg md:rounded-xl transition-all"
-                      title="Hapus"
+                      className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      title="Hapus Alamat"
                     >
-                      <Trash2 size={16} className="md:size-[18px]" />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
@@ -195,14 +187,10 @@ const AddressPage = () => {
             );
           })
         ) : (
-          <div className="flex flex-col items-center justify-center text-center py-20 px-6 border-2 border-dashed border-gray-100 rounded-3xl">
-            <div className="bg-slate-50 p-6 rounded-full mb-4">
-               <MapPin size={32} className="text-gray-200" />
-            </div>
-            <h4 className="text-lg font-black text-gray-900 uppercase italic">Kosong</h4>
-            <p className="text-[11px] text-gray-400 mt-2 max-w-[220px] font-bold uppercase tracking-widest leading-relaxed">
-              Tambahkan lokasi pengiriman agar checkout lebih cepat.
-            </p>
+          <div className="flex flex-col items-center justify-center text-center py-24 border-2 border-dashed border-gray-100 rounded-[32px]">
+            <MapPin size={32} className="text-gray-200 mb-6" />
+            <h4 className="text-lg font-bold text-gray-900">Belum ada alamat tersimpan</h4>
+            <p className="text-sm text-gray-400 mt-2 max-w-[250px]">Tambahkan lokasi pengiriman untuk memudahkan checkout.</p>
           </div>
         )}
       </div>
@@ -225,8 +213,8 @@ const AddressPage = () => {
         onClose={() => setDeleteModal({ isOpen: false, addressId: null })}
         onConfirm={handleConfirmDelete}
         isLoading={isLoading}
-        title="HAPUS ALAMAT?"
-        message="Data yang dihapus tidak dapat dikembalikan. Lanjutkan?"
+        title="Hapus Alamat?"
+        message="Apakah Anda yakin ingin menghapus alamat ini? Data yang sudah dihapus tidak dapat dikembalikan."
       />
     </div>
   );
