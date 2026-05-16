@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { productService } from "../../services/user/productService";
 import { useProductFilter } from "../../hooks/user/useProductFilter";
 import { formatIDR } from "../../utils/formatCurrency";
-import { ArrowUpRight, Loader2, SlidersHorizontal } from "lucide-react";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import api from "../../utils/api";
 
 const ProductSection = () => {
-  const API_URL = import.meta.env.VITE_API_URL;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState([]);
@@ -15,10 +15,13 @@ const ProductSection = () => {
     const fetchAllData = async () => {
       try {
         const response = await productService.getAllProducts();
-        const actualData = Array.isArray(response) ? response : response?.data || response?.products || [];
+        const actualData = Array.isArray(response)
+          ? response
+          : response?.data || response?.products || [];
         setProducts(actualData);
       } catch (err) {
-        console.error("Error:", err);
+        console.error("Database Error:", err);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -26,100 +29,118 @@ const ProductSection = () => {
     fetchAllData();
   }, []);
 
-  const categories = useMemo(() => {
-    return [...new Set(products?.map((p) => p.category?.name || p.category) || [])].filter(Boolean);
-  }, [products]);
+  const categories = [
+    ...new Set(products?.map((p) => p.category?.name || p.category) || []),
+  ].filter(Boolean);
 
-  const filteredProducts = useProductFilter(products, searchQuery, activeFilters);
+  const filteredProducts = useProductFilter(
+    Array.isArray(products) ? products : [],
+    searchQuery,
+    activeFilters,
+  );
 
   const toggleFilter = (catName) => {
     setActiveFilters((prev) =>
-      prev.includes(catName) ? prev.filter((c) => c !== catName) : [catName]
+      prev.includes(catName) ? prev.filter((c) => c !== catName) : [catName],
     );
   };
 
-  if (loading) return (
-    <div className="py-40 flex flex-col items-center justify-center gap-4">
-      <Loader2 className="animate-spin text-[#2D5A43]" size={40} />
-      <p className="font-black uppercase tracking-[0.3em] text-[10px] text-gray-400">Loading Produk...</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="py-40 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="animate-spin text-[#2D5A43]" size={40} />
+        <p className="font-black uppercase tracking-widest text-[10px]">
+          Loading products...
+        </p>
+      </div>
+    );
 
   return (
-    <div className="bg-[#FBFBFB] font-sans overflow-hidden">
-      {/* KATEGORI SECTION */}
-      <section className="max-w-7xl mx-auto py-12 md:py-24 px-5 lg:px-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div className="space-y-3">
-            <h2 className="text-4xl md:text-[64px] font-black text-gray-900 leading-[0.85] tracking-tighter uppercase">
-              KATEGORI <br />
-              <span className="text-[#2D5A43]">PILIHAN.</span>
+    <div className="bg-[#FBFBFB] font-sans">
+
+      {/* Kategori */}
+      <section className="max-w-7xl mx-auto py-16 md:py-24 px-6 lg:px-12">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-16">
+          <div className="space-y-3 md:space-y-4">
+            <h2 className="text-4xl sm:text-5xl md:text-[56px] font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
+              KATEGORI <br /><span className="text-[#2D5A43]">PILIHAN.</span>
             </h2>
-            <p className="text-gray-500 text-[13px] md:text-base font-medium max-w-xs">
-              Produk segar pilihan langsung dari distributor terbaik.
+            <p className="text-gray-500 text-sm md:text-[15px] font-medium max-w-sm leading-relaxed">
+              Pilih kategori untuk melihat produk segar langsung dari distributor.
             </p>
           </div>
-          <button 
+          <button
             onClick={() => setActiveFilters([])}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#2D5A43] sm:text-gray-400"
+            className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-all self-start sm:self-auto"
           >
-            <SlidersHorizontal size={14} />
-            {activeFilters.length > 0 ? "Reset Filter" : "Semua Produk"}
+            {activeFilters.length > 0 ? "Reset Filter" : "Tampilkan Semua"}
           </button>
         </div>
 
-        {/* Category Scrollable (Mobile) / Grid (Desktop) */}
-        <div className="flex overflow-x-auto pb-6 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 no-scrollbar">
-          {categories.map((cat, index) => {
-            const active = activeFilters.includes(cat);
-            return (
-              <div
-                key={index}
-                onClick={() => toggleFilter(cat)}
-                className={`flex-shrink-0 min-w-[140px] sm:min-w-0 p-5 md:p-8 rounded-[2rem] cursor-pointer transition-all border-2 ${
-                  active ? "border-[#2D5A43] bg-white shadow-xl scale-95" : "bg-white border-gray-100 hover:border-gray-200"
-                }`}
-              >
-                <div className={`w-10 h-10 md:w-14 md:h-14 mb-4 rounded-full flex items-center justify-center font-black text-sm md:text-xl transition-colors ${active ? "bg-[#2D5A43] text-white" : "bg-gray-50 text-[#2D5A43]"}`}>
-                  {cat.charAt(0)}
-                </div>
-                <p className={`font-black uppercase text-[10px] tracking-widest ${active ? "text-[#2D5A43]" : "text-gray-800"}`}>
-                  {cat}
-                </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-6">
+          {categories.map((cat, index) => (
+            <div
+              key={index}
+              onClick={() => toggleFilter(cat)}
+              className={`p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] cursor-pointer transition-all border ${
+                activeFilters.includes(cat)
+                  ? "border-[#2D5A43] bg-white shadow-xl shadow-green-900/5 ring-1 ring-[#2D5A43]"
+                  : "bg-white border-gray-100 hover:border-gray-300"
+              }`}
+            >
+              <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 bg-gray-50 rounded-full flex items-center justify-center font-black text-[#2D5A43]">
+                {cat.charAt(0).toUpperCase()}
               </div>
-            );
-          })}
+              <p className={`text-center font-black uppercase text-[9px] tracking-widest ${
+                activeFilters.includes(cat) ? "text-[#2D5A43]" : "text-gray-800"
+              }`}>
+                {cat}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* PRODUK SECTION */}
-      <section className="max-w-7xl mx-auto py-12 md:py-24 px-5 lg:px-12 border-t border-gray-100">
-        <h2 className="text-4xl md:text-[56px] font-black text-gray-900 mb-12 tracking-tighter uppercase">
-          PRODUK <span className="text-[#2D5A43]">KAMI.</span>
-        </h2>
+      {/* Produk */}
+      <section className="max-w-7xl mx-auto py-16 md:py-24 px-6 lg:px-12 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-16">
+          <div className="space-y-3 md:space-y-4">
+            <h2 className="text-4xl sm:text-5xl md:text-[56px] font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
+              PRODUK <br />
+              <span className="text-[#2D5A43]">KAMI.</span>
+            </h2>
+            <p className="text-gray-500 text-sm md:text-[15px] font-medium max-w-sm leading-relaxed">
+              Jelajahi produk berkualitas tinggi yang kami kurasi khusus untuk memenuhi kebutuhan Anda.
+            </p>
+          </div>
+        </div>
 
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-10 md:gap-16">
+        {filteredProducts && filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-12">
             {filteredProducts.map((prod) => (
-              <div key={prod.id} className="group cursor-pointer">
-                <div className="relative aspect-[4/5] bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 p-2 md:p-4 mb-4 md:mb-8 overflow-hidden group-hover:shadow-2xl transition-all duration-500">
+              <div key={prod.id || prod._id} className="group cursor-pointer">
+                <div className="relative aspect-[4/5] bg-white rounded-[2rem] md:rounded-[3rem] border border-gray-100 flex items-center justify-center p-4 mb-5 md:mb-8 overflow-hidden transition-all duration-500 group-hover:shadow-2xl">
                   <img
-                    src={`${API_URL}${prod.image_url || prod.image}`}
+                    src={`${api.defaults.baseURL}${prod.image_url || prod.image}`}
                     alt={prod.name}
-                    className="w-full h-full object-cover rounded-[1.5rem] md:rounded-[2.8rem] group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover rounded-[1.5rem] md:rounded-[2.2rem] group-hover:scale-110 transition-all duration-700"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image";
+                    }}
                   />
-                  <div className="absolute top-4 right-4 w-8 h-8 md:w-12 md:h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center group-hover:bg-[#2D5A43] group-hover:text-white transition-all">
-                    <ArrowUpRight size={16} />
+                  <div className="absolute top-5 right-5 md:top-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center border border-gray-100 group-hover:bg-[#2D5A43] group-hover:text-white transition-all">
+                    <ArrowUpRight size={18} />
                   </div>
                 </div>
-                <div className="px-2">
-                  <p className="text-[9px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60 mb-1">
+                <div className="px-2 md:px-4 text-left">
+                  <p className="text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
                     {prod.category?.name || prod.category || "General"}
                   </p>
-                  <h3 className="font-black text-gray-900 text-base md:text-2xl uppercase tracking-tighter truncate">
+                  <h3 className="font-black text-gray-900 text-xl md:text-2xl uppercase tracking-tighter">
                     {prod.name}
                   </h3>
-                  <p className="text-gray-400 font-bold text-sm md:text-lg">
+                  <p className="text-gray-400 font-bold text-base md:text-lg">
                     {formatIDR(prod.price)}
                   </p>
                 </div>
@@ -127,12 +148,15 @@ const ProductSection = () => {
             ))}
           </div>
         ) : (
-          <div className="py-20 text-center bg-white rounded-[2rem] border border-dashed border-gray-200">
-            <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Produk tidak tersedia</p>
+          <div className="py-16 md:py-20 text-center bg-white rounded-[2rem] md:rounded-[3rem] border border-dashed border-gray-200">
+            <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">
+              Data tidak ditemukan
+            </p>
           </div>
         )}
       </section>
     </div>
   );
 };
+
 export default ProductSection;
