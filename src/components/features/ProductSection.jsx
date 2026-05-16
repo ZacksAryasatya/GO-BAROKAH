@@ -57,8 +57,6 @@ const ProductSection = () => {
 
   return (
     <div className="bg-[#FBFBFB] font-sans">
-
-      {/* Kategori */}
       <section className="max-w-7xl mx-auto py-16 md:py-24 px-6 lg:px-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-16">
           <div className="space-y-3 md:space-y-4">
@@ -100,8 +98,6 @@ const ProductSection = () => {
           ))}
         </div>
       </section>
-
-      {/* Produk */}
       <section className="max-w-7xl mx-auto py-16 md:py-24 px-6 lg:px-12 border-t border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-16">
           <div className="space-y-3 md:space-y-4">
@@ -116,31 +112,28 @@ const ProductSection = () => {
         </div>
 
         {filteredProducts && filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-12">
             {filteredProducts.map((prod) => (
               <div key={prod.id || prod._id} className="group cursor-pointer">
-                <div className="relative aspect-[4/5] bg-white rounded-[2rem] md:rounded-[3rem] border border-gray-100 flex items-center justify-center p-4 mb-5 md:mb-8 overflow-hidden transition-all duration-500 group-hover:shadow-2xl">
+                <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 md:mb-6 transition-all duration-500 group-hover:shadow-2xl">
                   <img
                     src={`${api.defaults.baseURL}${prod.image_url || prod.image}`}
                     alt={prod.name}
-                    className="w-full h-full object-cover rounded-[1.5rem] md:rounded-[2.2rem] group-hover:scale-110 transition-all duration-700"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image";
                     }}
                   />
-                  <div className="absolute top-5 right-5 md:top-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center border border-gray-100 group-hover:bg-[#2D5A43] group-hover:text-white transition-all">
-                    <ArrowUpRight size={18} />
-                  </div>
                 </div>
-                <div className="px-2 md:px-4 text-left">
-                  <p className="text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
+                <div className="px-1 md:px-2 text-left">
+                  <p className="text-[9px] md:text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
                     {prod.category?.name || prod.category || "General"}
                   </p>
-                  <h3 className="font-black text-gray-900 text-xl md:text-2xl uppercase tracking-tighter">
+                  <h3 className="font-black text-gray-900 text-base md:text-xl uppercase tracking-tighter">
                     {prod.name}
                   </h3>
-                  <p className="text-gray-400 font-bold text-base md:text-lg">
+                  <p className="text-gray-400 font-bold text-sm md:text-base">
                     {formatIDR(prod.price)}
                   </p>
                 </div>

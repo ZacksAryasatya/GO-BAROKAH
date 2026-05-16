@@ -7,10 +7,8 @@ const Hero = () => {
 
   return (
     <section className="relative w-full bg-[#FBFBFB] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6 md:py-0 md:min-h-[85vh] flex flex-col md:flex-row items-center gap-5 md:gap-12">
-
-        {/* Text — order-2 di mobile (di bawah gambar), order-1 di desktop (kiri) */}
-        <div className="flex-1 space-y-6 md:space-y-8 z-10 order-2 md:order-1">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6 md:py-0 md:min-h-[85vh] flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-12">
+        <div className="flex-1 space-y-6 md:space-y-8 z-10 order-2 md:order-1 self-start md:self-center">
           <div className="space-y-3 md:space-y-4">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
               KUALITAS <br />
@@ -35,10 +33,8 @@ const Hero = () => {
             </div>
           </button>
         </div>
-
-        {/* Image — order-1 di mobile (di atas), order-2 di desktop (kanan) */}
-        <div className="w-full md:flex-1 h-64 sm:h-80 md:h-[70%] relative order-1 md:order-2">
-          <div className="w-full h-full rounded-[2rem] md:rounded-[3rem] overflow-hidden border-8 border-[#FBFBFB]">
+        <div className="w-full md:flex-1 h-64 sm:h-80 md:h-[70vh] relative order-1 md:order-2">
+          <div className="w-full h-full rounded-[2rem] md:rounded-[3rem] overflow-hidden">
             <img
               src={petaniImg}
               alt="Fresh Produce"
@@ -47,8 +43,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-
-      {/* Background accent — desktop only */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F6F8F7] -z-10 hidden md:block" />
     </section>
   );
