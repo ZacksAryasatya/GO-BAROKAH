@@ -7,6 +7,8 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteCategory,
+  deleteType,
   getAllTypes,
 } from "../../services/admin/productService";
 const normalizeProduct = (p) => {
@@ -167,6 +169,32 @@ const handleUpdate = async (id, productData) => {
     }
   };
 
+  const handleDeleteCategory = async (id) => {
+  try {
+    await deleteCategory(id);
+    setCategories((prev) => prev.filter((c) => String(c.id) !== String(id)));
+    toast.success("Kategori berhasil dihapus");
+    return { success: true };
+  } catch (err) {
+    const msg = getErrorMessage(err, "Gagal menghapus kategori");
+    toast.error(msg);
+    return { success: false, message: msg };
+  }
+};
+
+const handleDeleteType = async (id) => {
+  try {
+    await deleteType(id);
+    setTypes((prev) => prev.filter((t) => String(t.id) !== String(id)));
+    toast.success("Satuan berhasil dihapus");
+    return { success: true };
+  } catch (err) {
+    const msg = getErrorMessage(err, "Gagal menghapus satuan");
+    toast.error(msg);
+    return { success: false, message: msg };
+  }
+};
+
   return {
     products,
     categories,
@@ -178,6 +206,8 @@ const handleUpdate = async (id, productData) => {
     handleUpdate,
     handleDelete,
     handleAddCategory, 
+    handleDeleteCategory,
+    handleDeleteType,
     handleAddType,     
   };
 };

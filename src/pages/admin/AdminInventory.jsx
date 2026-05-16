@@ -33,6 +33,8 @@ const AdminInventory = () => {
     handleDelete,
     handleAddCategory,
     handleAddType,
+    handleDeleteCategory,
+    handleDeleteType,
   } = useAdminProducts();
 
   const [search, setSearch] = useState("");
@@ -325,6 +327,8 @@ const AdminInventory = () => {
           onClose={() => setModalMode(null)}
           onAddCategory={handleAddCategory}
           onAddType={handleAddType}
+          onDeleteCategory={handleDeleteCategory} 
+          onDeleteType={handleDeleteType}
           onSubmit={
             modalMode === "create"
               ? handleCreate

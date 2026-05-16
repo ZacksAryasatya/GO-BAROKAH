@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { X, ImageIcon, Plus, Check, RotateCcw, Tag } from "lucide-react"; 
+import {
+  X,
+  ImageIcon,
+  Plus,
+  Check,
+  RotateCcw,
+  Tag,
+  Trash2,
+} from "lucide-react";
 import Button from "../../common/Button";
+import ConfirmModal from "../../forms/ConfirmModal";
 
 const INITIAL_FORM = {
   name: "",
@@ -10,7 +19,7 @@ const INITIAL_FORM = {
   image: null,
   stock: 0,
   price: 0,
-  discount_amount: 0, 
+  discount_amount: 0,
 };
 
 const ProductModal = ({
@@ -22,6 +31,8 @@ const ProductModal = ({
   types = [],
   onAddCategory,
   onAddType,
+  onDeleteCategory,
+  onDeleteType,
 }) => {
   const [form, setForm] = useState(INITIAL_FORM);
   const [animate, setAnimate] = useState(false);
@@ -30,6 +41,11 @@ const ProductModal = ({
   const [newCatMode, setNewCatMode] = useState(false);
   const [newTypeMode, setNewTypeMode] = useState(false);
   const [tempValue, setTempValue] = useState("");
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: null, // "category" | "type"
+    id: null,
+  });
 
   useEffect(() => {
     if (mode) {
@@ -129,6 +145,7 @@ const ProductModal = ({
     "p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-all flex items-center justify-center border border-emerald-100";
 
   return (
+    <>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${animate ? "opacity-100" : "opacity-0"}`}
@@ -235,6 +252,21 @@ const ProductModal = ({
                     >
                       <Plus size={18} />
                     </button>
+                    {form.category_id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfirmModal({
+                            isOpen: true,
+                            type: "category",
+                            id: form.category_id,
+                          })
+                        }
+                        className="p-3 bg-red-50 text-red-400 rounded-xl hover:bg-red-100 transition-all border border-red-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -289,6 +321,21 @@ const ProductModal = ({
                     >
                       <Plus size={18} />
                     </button>
+                    {form.type_id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfirmModal({
+                            isOpen: true,
+                            type: "type",
+                            id: form.type_id,
+                          })
+                        }
+                        className="p-3 bg-red-50 text-red-400 rounded-xl hover:bg-red-100 transition-all border border-red-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -405,7 +452,29 @@ const ProductModal = ({
           </Button>
         </div>
       </form>
+      <ConfirmModal
+      isOpen={confirmModal.isOpen}
+      onClose={() => setConfirmModal({ isOpen: false, type: null, id: null })}
+      onConfirm={async () => {
+        if (confirmModal.type === "category") {
+          await onDeleteCategory(confirmModal.id);
+          setForm((prev) => ({ ...prev, category_id: "" }));
+        } else {
+          await onDeleteType(confirmModal.id);
+          setForm((prev) => ({ ...prev, type_id: "" }));
+        }
+        setConfirmModal({ isOpen: false, type: null, id: null });
+      }}
+      title={confirmModal.type === "category" ? "Hapus Kategori?" : "Hapus Satuan?"}
+      message={
+        confirmModal.type === "category"
+          ? "Kategori ini akan dihapus permanen. Produk yang memakai kategori ini mungkin terpengaruh."
+          : "Satuan ini akan dihapus permanen. Produk yang memakai satuan ini mungkin terpengaruh."
+      }
+      confirmText="Ya, Hapus"
+    />
     </div>
+    </>
   );
 };
 

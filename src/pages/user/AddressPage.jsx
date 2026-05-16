@@ -1,42 +1,20 @@
 import React, { useState } from "react";
 import {
-  MapPin,
-  Plus,
-  Trash2,
-  PencilLine,
-  Loader2,
-  Home,
-  Briefcase,
-  Map,
-  Phone,
-  User,
+  MapPin, Plus, Trash2, PencilLine, Loader2,
+  Home, Briefcase, Map, Phone, User,
 } from "lucide-react";
 import AddressModal from "../../components/forms/AddressModal";
-import ConfirmModal from "../../components/forms/ConfirmModal"; 
+import ConfirmModal from "../../components/forms/ConfirmModal";
 import { useAddressLogic } from "../../hooks/user/useAddressLogic";
 
 const AddressPage = () => {
-  const {
-    addresses,
-    isLoading,
-    handleSaveAddress,
-    handleDeleteAddress,
-    handleSetDefault,
-  } = useAddressLogic();
+  const { addresses, isLoading, handleSaveAddress, handleDeleteAddress, handleSetDefault } = useAddressLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    addressId: null,
-  });
-
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, addressId: null });
   const [formData, setFormData] = useState({
-    label: "",
-    recipient_name: "",
-    recipient_phone: "",
-    address_detail: "",
-    is_default: false,
+    label: "", recipient_name: "", recipient_phone: "", address_detail: "", is_default: false,
   });
 
   const handleInputChange = (e) => {
@@ -56,27 +34,19 @@ const AddressPage = () => {
       setEditId(item.id || item._id);
       setFormData({
         label: item.label || "",
-        recipient_name: item.recipientName || item.recipient_name || "", 
+        recipient_name: item.recipientName || item.recipient_name || "",
         recipient_phone: item.recipientPhone || item.recipient_phone || "",
         address_detail: item.addressDetail || item.address_detail || "",
         is_default: item.isDefault || false,
       });
     } else {
       setEditId(null);
-      setFormData({
-        label: "",
-        recipient_name: "",
-        recipient_phone: "",
-        address_detail: "",
-        is_default: false,
-      });
+      setFormData({ label: "", recipient_name: "", recipient_phone: "", address_detail: "", is_default: false });
     }
     setIsModalOpen(true);
   };
 
-  const openDeleteConfirm = (id) => {
-    setDeleteModal({ isOpen: true, addressId: id });
-  };
+  const openDeleteConfirm = (id) => setDeleteModal({ isOpen: true, addressId: id });
 
   const handleConfirmDelete = async () => {
     if (deleteModal.addressId) {
@@ -86,8 +56,8 @@ const AddressPage = () => {
   };
 
   return (
-    <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm min-h-[600px]">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+    <div className="bg-white rounded-[32px] p-6 sm:p-8 border border-gray-100 shadow-sm min-h-[600px]">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h3 className="text-2xl font-black text-gray-900 tracking-tight">
             Alamat <span className="text-[#3A5A4D]">Pengiriman.</span>
@@ -98,13 +68,12 @@ const AddressPage = () => {
         </div>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 bg-[#3A5A4D] hover:bg-[#2D463C] text-white px-6 py-3 rounded-2xl text-[12px] font-bold tracking-widest transition-all active:scale-95 shadow-lg shadow-green-900/10"
+          className="flex items-center gap-2 bg-[#3A5A4D] hover:bg-[#2D463C] text-white px-5 py-3 rounded-2xl text-[11px] font-black tracking-widest transition-all active:scale-95 shadow-lg shadow-green-900/10 whitespace-nowrap w-full sm:w-auto justify-center"
         >
-          <Plus size={18} /> TAMBAH ALAMAT
+          <Plus size={16} /> TAMBAH ALAMAT
         </button>
       </header>
-
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-5">
         {isLoading ? (
           <div className="flex justify-center py-40">
             <Loader2 className="animate-spin text-[#3A5A4D]" size={32} />
@@ -113,7 +82,6 @@ const AddressPage = () => {
           addresses.map((item) => {
             const itemId = item.id || item._id;
             const isDefault = item.isDefault || item.is_default || false;
-
             return (
               <div
                 key={itemId}
@@ -125,9 +93,7 @@ const AddressPage = () => {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-xl ${isDefault ? "bg-[#3A5A4D] text-white" : "bg-gray-100 text-gray-500"}`}
-                    >
+                    <div className={`p-2 rounded-xl ${isDefault ? "bg-[#3A5A4D] text-white" : "bg-gray-100 text-gray-500"}`}>
                       {getLabelIcon(item.label)}
                     </div>
                     <span className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400">
@@ -140,7 +106,7 @@ const AddressPage = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="px-1 py-2 space-y-3">
                   <div className="flex items-center gap-4">
                     <User size={16} className="text-[#3A5A4D] opacity-40 shrink-0" />
@@ -156,7 +122,7 @@ const AddressPage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between items-center pt-5 border-t border-gray-50 gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-5 border-t border-gray-50 gap-3">
                   {!isDefault ? (
                     <button
                       onClick={() => handleSetDefault(itemId)}
@@ -165,19 +131,16 @@ const AddressPage = () => {
                       Jadikan Utama
                     </button>
                   ) : <div />}
-
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 self-end sm:self-auto">
                     <button
                       onClick={() => openModal(item)}
                       className="p-2.5 text-gray-400 hover:text-[#3A5A4D] hover:bg-gray-50 rounded-xl transition-all"
-                      title="Edit Alamat"
                     >
                       <PencilLine size={18} />
                     </button>
                     <button
                       onClick={() => openDeleteConfirm(itemId)}
                       className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                      title="Hapus Alamat"
                     >
                       <Trash2 size={18} />
                     </button>
