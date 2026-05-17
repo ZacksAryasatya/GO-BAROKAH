@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Heart, Minus, Plus, ArrowLeft, BadgeCheck } from 'lucide-react';
+import { Star, ShoppingBag, Minus, Plus, ArrowLeft, Loader2 } from 'lucide-react';
 import { formatIDR } from '../../utils/formatCurrency';
 import { useProductDetail } from '../../hooks/user/useProductDetail';
 import { useAuth } from '../../context/AuthContext';
@@ -14,21 +14,19 @@ const ProductDetailPage = () => {
   if (!detail.product) return <NotFoundState />;
 
   const {
-    product, quantity, increase, decrease,
+    product, quantity, adding,
+    increase, decrease,
     handleQuantityChange, handleBlur, onAddToCart, goBack
   } = detail;
 
-  const handleAddClick = () => {
+  const handleAddClick = async () => {
     if (!user) {
       toast.error('Login dulu yuk buat belanja!', {
         style: { borderRadius: '16px', background: '#2D5A43', color: '#fff', fontSize: '12px', fontWeight: 'bold' }
       });
       return;
     }
-    onAddToCart();
-    toast.success(`${quantity} ${product.name} masuk keranjang!`, {
-      style: { fontSize: '12px', fontWeight: 'bold' }
-    });
+    await onAddToCart();
   };
 
   return (
@@ -46,7 +44,7 @@ const ProductDetailPage = () => {
             )}
             <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm w-full max-h-[380px] sm:max-h-[420px] lg:max-h-[480px] flex items-center justify-center p-6">
               <img
-                src={product.img}
+                src={product.img || product.image_url || product.image}
                 alt={product.name}
                 className="w-full h-full object-contain max-h-[320px] sm:max-h-[360px] lg:max-h-[420px] hover:scale-105 transition-transform duration-700"
                 onError={(e) => {
@@ -56,6 +54,7 @@ const ProductDetailPage = () => {
               />
             </div>
           </div>
+
           <div className="flex flex-col py-0 lg:py-2">
             <div className="flex items-center gap-3 mb-3 flex-wrap">
               <span className="text-[#2D5A43] font-black text-[10px] uppercase tracking-[0.25em]">
@@ -79,6 +78,7 @@ const ProductDetailPage = () => {
             <p className="text-gray-500 text-sm leading-relaxed font-medium mb-7 line-clamp-4">
               {product.description || "Kualitas bahan pangan organik terbaik dari UD Barokah. Segar, sehat, dan langsung dari petani lokal untuk meja makan Anda."}
             </p>
+
             <div className="flex flex-col sm:flex-row items-stretch gap-3">
               <QuantityControl
                 qty={quantity}
@@ -86,12 +86,24 @@ const ProductDetailPage = () => {
                 onMinus={decrease}
                 onChange={handleQuantityChange}
                 onBlur={handleBlur}
+                disabled={adding}
               />
               <button
                 onClick={handleAddClick}
-                className="flex-1 bg-[#2D5A43] text-white py-4 px-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-[#234735] transition-all shadow-lg shadow-[#2D5A43]/20 active:scale-95"
+                disabled={adding}
+                className="flex-1 bg-[#2D5A43] text-white py-4 px-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-[#234735] transition-all shadow-lg shadow-[#2D5A43]/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
               >
-                <ShoppingBag size={16} /> Tambah ke Keranjang
+                {adding ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Menambahkan...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={16} />
+                    Tambah ke Keranjang
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -111,9 +123,9 @@ const BackButton = ({ onClick }) => (
   </button>
 );
 
-const QuantityControl = ({ qty, onPlus, onMinus, onChange, onBlur }) => (
+const QuantityControl = ({ qty, onPlus, onMinus, onChange, onBlur, disabled }) => (
   <div className="flex items-center border border-gray-100 rounded-2xl p-1.5 bg-white shadow-sm w-full sm:w-auto justify-between focus-within:border-[#2D5A43] transition-all shrink-0">
-    <button onClick={onMinus} className="p-2.5 hover:bg-gray-50 rounded-xl transition-all text-gray-400 hover:text-gray-700">
+    <button onClick={onMinus} disabled={disabled} className="p-2.5 hover:bg-gray-50 rounded-xl transition-all text-gray-400 hover:text-gray-700 disabled:opacity-50">
       <Minus size={14} />
     </button>
     <input
@@ -121,9 +133,10 @@ const QuantityControl = ({ qty, onPlus, onMinus, onChange, onBlur }) => (
       value={qty}
       onChange={onChange}
       onBlur={onBlur}
-      className="w-12 text-center font-black text-sm bg-transparent border-none focus:ring-0 p-0 text-gray-900"
+      disabled={disabled}
+      className="w-12 text-center font-black text-sm bg-transparent border-none focus:ring-0 p-0 text-gray-900 disabled:opacity-50"
     />
-    <button onClick={onPlus} className="p-2.5 hover:bg-[#E8F5EE] rounded-xl transition-all text-[#2D5A43]">
+    <button onClick={onPlus} disabled={disabled} className="p-2.5 hover:bg-[#E8F5EE] rounded-xl transition-all text-[#2D5A43] disabled:opacity-50">
       <Plus size={14} />
     </button>
   </div>

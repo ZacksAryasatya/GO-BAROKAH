@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import { productService } from "../../services/user/productService";
 import { useProductFilter } from "../../hooks/user/useProductFilter";
 import { formatIDR } from "../../utils/formatCurrency";
-import { ArrowUpRight, Loader2 } from "lucide-react";
-import api from "../../utils/api";
+import { API_URL } from "../../utils/api";
+import { Loader2 } from "lucide-react";
+
+const buildImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
+};
 
 const ProductSection = () => {
   const [products, setProducts] = useState([]);
@@ -18,7 +24,10 @@ const ProductSection = () => {
         const actualData = Array.isArray(response)
           ? response
           : response?.data || response?.products || [];
-        setProducts(actualData);
+        setProducts(actualData.map((p) => ({
+          ...p,
+          image_url: buildImageUrl(p.image_url || p.image),
+        })));
       } catch (err) {
         console.error("Database Error:", err);
         setProducts([]);
@@ -49,9 +58,7 @@ const ProductSection = () => {
     return (
       <div className="py-40 flex flex-col items-center justify-center gap-4">
         <Loader2 className="animate-spin text-[#2D5A43]" size={40} />
-        <p className="font-black uppercase tracking-widest text-[10px]">
-          Loading products...
-        </p>
+        <p className="font-black uppercase tracking-widest text-[10px]">Loading products...</p>
       </div>
     );
 
@@ -98,12 +105,12 @@ const ProductSection = () => {
           ))}
         </div>
       </section>
+
       <section className="max-w-7xl mx-auto py-16 md:py-24 px-6 lg:px-12 border-t border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-16">
           <div className="space-y-3 md:space-y-4">
             <h2 className="text-4xl sm:text-5xl md:text-[56px] font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
-              PRODUK <br />
-              <span className="text-[#2D5A43]">KAMI.</span>
+              PRODUK <br /><span className="text-[#2D5A43]">KAMI.</span>
             </h2>
             <p className="text-gray-500 text-sm md:text-[15px] font-medium max-w-sm leading-relaxed">
               Jelajahi produk berkualitas tinggi yang kami kurasi khusus untuk memenuhi kebutuhan Anda.
@@ -117,7 +124,7 @@ const ProductSection = () => {
               <div key={prod.id || prod._id} className="group cursor-pointer">
                 <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 md:mb-6 transition-all duration-500 group-hover:shadow-2xl">
                   <img
-                    src={`${api.defaults.baseURL}${prod.image_url || prod.image}`}
+                    src={prod.image_url}
                     alt={prod.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
                     onError={(e) => {

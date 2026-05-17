@@ -8,7 +8,7 @@ const FilterSidebar = ({ categories, activeFilters, onFilterChange, onClear, hid
         <div className="flex items-center gap-3 mb-6">
           <SlidersHorizontal size={18} className="text-[#2D5A43]" strokeWidth={2.5} />
           <h3 className="font-black text-[13px] uppercase tracking-[0.15em] text-[#2D5A43]">
-            Filters
+            Kategori
           </h3>
           {activeFilters.length > 0 && (
             <button onClick={onClear} className="ml-auto text-[9px] text-red-400 font-bold uppercase tracking-wider hover:text-red-600 transition-colors">

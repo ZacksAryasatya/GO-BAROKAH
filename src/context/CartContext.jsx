@@ -1,86 +1,106 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { cartService } from "../services/user/cartService";
+import { API_URL } from "../utils/api";
+import toast from "react-hot-toast";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
-  const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [cartItems, setCartItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      setCartItems([]);
-      localStorage.removeItem("cart");
+  const buildImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
+  };
+
+  const mapItems = (items = []) =>
+    items.map((item) => ({
+      id: item.product_id,
+      cartItemId: item.id,
+      name: item.name,
+      image_url: buildImageUrl(item.image_url),
+      price: Number(item.final_price ?? item.price) || 0,
+      quantity: Number(item.quantity) || 0,
+      stock: item.stock,
+      category: item.category ?? "",
+    }));
+
+  const loadCart = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const res = await cartService.getCart();
+      setCartItems(mapItems(res.data?.items));
+    } catch (err) {
+      console.error("Load cart error:", err);
+    } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
-  const addToCart = (product, quantity = 1) => {
-    if (!user) return; 
-    
-    const qtyToAdd = parseInt(quantity);
-    setCartItems((prevItems) => {
-      const isExist = prevItems.find((item) => item.id === product.id);
-      if (isExist) {
-        return prevItems.map((item) =>
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + qtyToAdd } 
-            : item
-        );
-      }
-      return [...prevItems, { ...product, quantity: qtyToAdd }];
-    });
-  };
-
-  const removeFromCart = (productId) => {
-    setCartItems((prevItems) => {
-      const item = prevItems.find((i) => i.id === productId);
-      if (item && item.quantity > 1) {
-        return prevItems.map((i) =>
-          i.id === productId ? { ...i, quantity: i.quantity - 1 } : i
-        );
-      }
-      return prevItems;
-    });
-  };
-
-  const removeItem = (productId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
-  };
-
-  const updateQuantity = (productId, newQty) => {
-    if (!user) return;
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === productId ? { ...item, quantity: Math.max(1, newQty) } : item
-      )
-    );
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem("cart");
-  };
-
-  const totalItems = cartItems.length;
-
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("cart", JSON.stringify(cartItems));
+    if (user) { loadCart(); } else { setCartItems([]); }
+  }, [user]);
+
+  const addToCart = async (product, quantity = 1) => {
+    if (!user) return;
+    const existing = cartItems.find((i) => i.id === product.id);
+    try {
+      const res = existing
+        ? await cartService.updateItem(product.id, existing.quantity + quantity)
+        : await cartService.addItem(product.id, quantity);
+      if (res.data?.items) setCartItems(mapItems(res.data.items));
+    } catch (err) {
+      toast.error("Gagal menambah ke keranjang");
+      throw err;
     }
-  }, [cartItems, user]);
+  };
+
+  const removeFromCart = async (productId) => {
+    if (!user) return;
+    const existing = cartItems.find((i) => i.id === productId);
+    if (!existing) return;
+    try {
+      const res = existing.quantity <= 1
+        ? await cartService.deleteItem(productId)
+        : await cartService.updateItem(productId, existing.quantity - 1);
+      if (res.data?.items) setCartItems(mapItems(res.data.items));
+    } catch (err) { toast.error("Gagal update keranjang"); }
+  };
+
+  const removeItem = async (productId) => {
+    if (!user) return;
+    try {
+      const res = await cartService.deleteItem(productId);
+      if (res.data?.items) setCartItems(mapItems(res.data.items));
+    } catch (err) { toast.error("Gagal menghapus item"); }
+  };
+
+  const updateQuantity = async (productId, newQty) => {
+    if (!user) return;
+    try {
+      const res = await cartService.updateItem(productId, Math.max(1, newQty));
+      if (res.data?.items) setCartItems(mapItems(res.data.items));
+    } catch (err) { toast.error("Gagal update quantity"); }
+  };
+
+  const clearCart = async () => {
+    if (!user) return;
+    try {
+      await cartService.clearCart();
+      setCartItems([]);
+    } catch (err) { toast.error("Gagal mengosongkan keranjang"); }
+  };
 
   return (
-    <CartContext.Provider value={{ 
-      cartItems, 
-      addToCart, 
-      removeFromCart, 
-      removeItem, 
-      updateQuantity,
-      clearCart, 
-      totalItems 
+    <CartContext.Provider value={{
+      cartItems, isLoading, addToCart, removeFromCart,
+      removeItem, updateQuantity, clearCart,
+      totalItems: cartItems.length, loadCart,
     }}>
       {children}
     </CartContext.Provider>

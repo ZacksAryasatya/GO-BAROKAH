@@ -33,13 +33,3 @@ export const deleteProduct = async (id) => {
   const res = await api.delete(`/api/products/${id}`);
   return res.data;
 };
-
-export const deleteCategory = async (id) => {
-  const res = await api.delete(`/api/products/category/${id}`);
-  return res.data;
-};
-
-export const deleteType = async (id) => {
-  const res = await api.delete(`/api/products/type/${id}`);
-  return res.data;
-};
