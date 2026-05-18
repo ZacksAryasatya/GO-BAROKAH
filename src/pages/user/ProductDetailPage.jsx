@@ -19,6 +19,10 @@ const ProductDetailPage = () => {
     handleQuantityChange, handleBlur, onAddToCart, goBack
   } = detail;
 
+  const hasDiscount = product.discount_amount > 0 && product.final_price > 0 && product.final_price !== product.price;
+  const displayPrice = hasDiscount ? product.final_price : product.price;
+  const discountPercent = hasDiscount ? product.discount_amount : 0;
+
   const handleAddClick = async () => {
     if (!user) {
       toast.error('Login dulu yuk buat belanja!', {
@@ -37,9 +41,9 @@ const ProductDetailPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-start">
           <div className="relative">
-            {product.sale && (
+            {hasDiscount && (
               <span className="absolute top-4 left-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                Sale {product.sale}
+                -{discountPercent}%
               </span>
             )}
             <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm w-full max-h-[380px] sm:max-h-[420px] lg:max-h-[480px] flex items-center justify-center p-6">
@@ -65,12 +69,18 @@ const ProductDetailPage = () => {
                 <span className="text-orange-600 font-black text-[10px]">4.8</span>
               </div>
             </div>
+
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter leading-[1.05] mb-5 uppercase">
               {product.name}
             </h1>
-            <div className="mb-5">
-              <span className="text-3xl lg:text-4xl font-black text-[#2D5A43] tracking-tight">
-                {formatIDR(product.price)}
+            <div className="mb-5 flex flex-col">
+              {hasDiscount && (
+                <span className="text-gray-400 text-sm font-bold line-through leading-none mb-1">
+                  {formatIDR(product.price)}
+                </span>
+              )}
+              <span className={`text-3xl lg:text-4xl font-black tracking-tight ${hasDiscount ? 'text-red-500' : 'text-[#2D5A43]'}`}>
+                {formatIDR(displayPrice)}
               </span>
             </div>
 

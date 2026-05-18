@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon, Tag } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
 import ProductFilterBar from "../../components/admin/inventory/ProductFilterBar";
@@ -7,9 +7,9 @@ import ProductModal from "../../components/admin/inventory/ProductModal";
 import ConfirmModal from "../../components/forms/ConfirmModal";
 import { useAdminProducts } from "../../hooks/admin/useAdminProducts";
 import { formatRupiah } from "../../utils/formatters";
-import api from "../../utils/api";
 
 const PER_PAGE = 10;
+
 const AdminInventory = () => {
   const { products, categories, types, isLoading, actionLoading, handleCreate, handleUpdate, handleDelete, handleAddCategory, handleAddType, handleDeleteCategory, handleDeleteType } = useAdminProducts();
 
@@ -66,11 +66,11 @@ const AdminInventory = () => {
           <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 px-8 py-6 transition-all duration-500 ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-[140px]" : "opacity-100 scale-100 mb-0"}`}>
             {stats.map((s) => <InventoryStatCard key={s.label} {...s} />)}
           </div>
-
           <div className={`px-8 py-2 transition-all duration-500 ${isScrolled ? "-translate-y-10" : "translate-y-0"}`}>
             <ProductFilterBar search={search} onSearchChange={setSearch} activecat={activecat} onCatChange={setActivecat} categories={categories} />
           </div>
         </div>
+
         <div className="flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-auto custom-scrollbar" ref={tableScrollRef}>
@@ -92,53 +92,79 @@ const AdminInventory = () => {
                     </tr>
                   ) : paginatedItems.length > 0 ? (
                     <>
-                      {paginatedItems.map((p) => (
-                        <tr key={p.id} className="hover:bg-slate-50/50 h-[73px]">
-                          <td className="px-8 py-4">
-                            <div className="flex items-center gap-4">
-                              <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center">
-                                {p.image_url || p.image ? (
-                                  <img
-                                    src={p.image_url || p.image}
-                                    alt={p.name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => { e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image"; }}
-                                  />
+                      {paginatedItems.map((p) => {
+                        const hasDiscount = p.discount_amount > 0 && p.final_price > 0 && p.final_price !== p.price;
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50/50 h-[73px]">
+                            <td className="px-8 py-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center">
+                                  {p.image_url || p.image ? (
+                                    <img
+                                      src={p.image_url || p.image}
+                                      alt={p.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => { e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image"; }}
+                                    />
+                                  ) : (
+                                    <ImageIcon size={18} className="text-slate-300" />
+                                  )}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <p className="font-bold text-slate-900 text-xs uppercase truncate">{p.name}</p>
+                                  <p className="text-[9px] text-slate-400 font-medium truncate w-40">{p.description || "No description available"}</p>
+                                  <p className="text-[9px] text-slate-400 font-bold uppercase">ID: {String(p.id).slice(-6)}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-4">
+                              <span className="text-[9px] font-black text-blue-600 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100/50 uppercase">
+                                {p.category?.name || p.category}
+                              </span>
+                            </td>
+                            <td className="px-8 py-4">
+                              <div className="flex flex-col">
+                                <span className={`font-black text-xs ${Number(p.stock) <= 5 ? "text-red-500" : "text-slate-700"}`}>{p.stock}</span>
+                                <span className="text-[9px] text-slate-400 font-bold uppercase">{p.type?.name || p.unit}</span>
+                              </div>
+                            </td>
+                            <td className="px-8 py-4">
+                              <div className="flex flex-col gap-0.5">
+                                {hasDiscount ? (
+                                  <>
+                                    <span className="text-slate-400 text-[10px] font-bold line-through leading-none">
+                                      {formatRupiah(p.price)}
+                                    </span>
+                                    <span className="font-black text-xs text-red-500">
+                                      {formatRupiah(p.final_price)}
+                                    </span>
+                                    <span className="flex items-center gap-1 mt-0.5">
+                                      <Tag size={9} className="text-red-400" />
+                                      <span className="text-[9px] font-black text-red-400 uppercase tracking-wider">
+                                        Diskon {p.discount_amount}%
+                                      </span>
+                                    </span>
+                                  </>
                                 ) : (
-                                  <ImageIcon size={18} className="text-slate-300" />
+                                  <span className="font-black text-slate-900 text-xs">
+                                    {formatRupiah(p.price)}
+                                  </span>
                                 )}
                               </div>
-                              <div className="flex flex-col min-w-0">
-                                <p className="font-bold text-slate-900 text-xs uppercase truncate">{p.name}</p>
-                                <p className="text-[9px] text-slate-400 font-medium truncate w-40">{p.description || "No description available"}</p>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase">ID: {String(p.id).slice(-6)}</p>
+                            </td>
+                            <td className="px-8 py-4">
+                              <div className="flex gap-2">
+                                <button onClick={() => openModal("edit", p)} className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-600 rounded-xl active:scale-90 transition-all">
+                                  <Pencil size={14} />
+                                </button>
+                                <button onClick={() => openModal("delete", p)} className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl active:scale-90 transition-all">
+                                  <Trash2 size={14} />
+                                </button>
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-4">
-                            <span className="text-[9px] font-black text-blue-600 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100/50 uppercase">
-                              {p.category?.name || p.category}
-                            </span>
-                          </td>
-                          <td className="px-8 py-4">
-                            <div className="flex flex-col">
-                              <span className={`font-black text-xs ${Number(p.stock) <= 5 ? "text-red-500" : "text-slate-700"}`}>{p.stock}</span>
-                              <span className="text-[9px] text-slate-400 font-bold uppercase">{p.type?.name || p.unit}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-4 font-black text-slate-900 text-xs">{formatRupiah(p.price)}</td>
-                          <td className="px-8 py-4">
-                            <div className="flex gap-2">
-                              <button onClick={() => openModal("edit", p)} className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-600 rounded-xl active:scale-90 transition-all">
-                                <Pencil size={14} />
-                              </button>
-                              <button onClick={() => openModal("delete", p)} className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl active:scale-90 transition-all">
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                       {paginatedItems.length < PER_PAGE && (
                         <tr style={{ height: `${(PER_PAGE - paginatedItems.length) * 73}px` }}>
                           <td colSpan={5} />
@@ -167,6 +193,7 @@ const AdminInventory = () => {
           </div>
         </div>
       </div>
+
       {(modalMode === "create" || modalMode === "edit") && (
         <ProductModal
           mode={modalMode}

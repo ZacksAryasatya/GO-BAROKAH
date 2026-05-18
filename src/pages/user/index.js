@@ -9,3 +9,4 @@ export { default as Payment } from './PaymentPage';
 export { default as ProfileInfoPage } from './ProfileInfoPage';
 export { default as AddressPage } from './AddressPage';
 export { default as OrdersPage } from './HistoryPage';
+export { default as OrderSuccessPage } from './OrderSuccessPage';

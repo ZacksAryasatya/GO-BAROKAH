@@ -26,7 +26,10 @@ const PaymentPage = () => {
 
   const handleFinalConfirm = () => {
     const methodInfo = paymentOptions.find(p => p.id === selectedMethod);
-    processOrder({ ...order, paymentMethod: selectedMethod, paymentName: methodInfo.name });
+    processOrder(
+      { ...order, paymentMethod: selectedMethod, paymentName: methodInfo?.name },
+      navigate
+    );
   };
 
   return (
@@ -84,6 +87,7 @@ const PaymentPage = () => {
               );
             })}
           </div>
+
           <aside className="hidden lg:block lg:col-span-1">
             <div className="bg-white rounded-[2.5rem] p-10 sticky top-32 border border-gray-100 shadow-xl shadow-gray-200/40">
               <div className="mb-8 pb-8 border-b border-gray-50">
@@ -131,9 +135,7 @@ const PaymentPage = () => {
           <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
             <div className="flex flex-col min-w-0">
               <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">Total</span>
-              <span className="text-lg font-black text-[#3A5A4D] tracking-tighter leading-tight">
-                {order.total}
-              </span>
+              <span className="text-lg font-black text-[#3A5A4D] tracking-tighter leading-tight">{order.total}</span>
             </div>
             <button
               disabled={!selectedMethod || loading}

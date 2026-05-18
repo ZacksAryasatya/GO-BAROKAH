@@ -5,7 +5,7 @@ import { addressService } from '../../services/user/addressService';
 import { formatIDR } from '../../utils/formatCurrency';
 
 export const useCheckoutLogic = () => {
-  const { cartItems } = useCart();
+  const { cartItems, cartSummary } = useCart();
   const { user } = useAuth(); 
   
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -44,10 +44,10 @@ export const useCheckoutLogic = () => {
     { name: 'Lamandau', dist: 120, rate: 0.025 },       
   ];
 
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const rawSubtotal = cartSummary?.grand_total ?? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const activeZone = zones.find(z => z.name === selectedLocation);
-  const rawShipping = isPickup ? 0 : (activeZone ? subtotal * activeZone.rate : 0);
-  const total = subtotal + rawShipping;
+  const rawShipping = isPickup ? 0 : (activeZone ? rawSubtotal * activeZone.rate : 0);
+  const total = rawSubtotal + rawShipping;
 
   return {
     cartItems,
@@ -60,7 +60,7 @@ export const useCheckoutLogic = () => {
     setNamaPenerima,
     alamatDetail, 
     setAlamatDetail,
-    subtotal: formatIDR(subtotal),
+    subtotal: formatIDR(rawSubtotal),
     shippingFee: formatIDR(rawShipping),
     total: formatIDR(total),
     activeZone,

@@ -137,7 +137,9 @@ const CheckoutPage = () => {
                       Lokasi Pengambilan
                     </p>
                     <p className="text-xs text-emerald-900/70 font-medium leading-relaxed">
-                      Jl. Pangkalan Bun No. 12, Kal-Teng. · Buka 08:00 – 20:00
+                      Jalan Kecubung No.D136, RT.002, Pasir Panjang, Kec. Arut
+                      Sel., Kabupaten Kotawaringin Barat, Kalimantan Tengah
+                      74181
                     </p>
                   </div>
                 </div>
