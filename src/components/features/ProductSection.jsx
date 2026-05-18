@@ -120,32 +120,50 @@ const ProductSection = () => {
 
         {filteredProducts && filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-12">
-            {filteredProducts.map((prod) => (
-              <div key={prod.id || prod._id} className="group cursor-pointer">
-                <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 md:mb-6 transition-all duration-500 group-hover:shadow-2xl">
-                  <img
-                    src={prod.image_url}
-                    alt={prod.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image";
-                    }}
-                  />
+            {filteredProducts.map((prod) => {
+              const hasDiscount = prod.discount_amount > 0 && prod.final_price > 0 && prod.final_price !== prod.price;
+              const displayPrice = hasDiscount ? prod.final_price : prod.price;
+              const discountPercent = hasDiscount ? prod.discount_amount : 0;
+
+              return (
+                <div key={prod.id || prod._id} className="group cursor-pointer">
+                  <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 md:mb-6 transition-all duration-500 group-hover:shadow-2xl">
+                    <img
+                      src={prod.image_url}
+                      alt={prod.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image";
+                      }}
+                    />
+                    {hasDiscount && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-wider">
+                        -{discountPercent}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-1 md:px-2 text-left">
+                    <p className="text-[9px] md:text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
+                      {prod.category?.name || prod.category || "General"}
+                    </p>
+                    <h3 className="font-black text-gray-900 text-base md:text-xl uppercase tracking-tighter">
+                      {prod.name}
+                    </h3>
+                    <div className="flex flex-col mt-0.5">
+                      {hasDiscount && (
+                        <span className="text-gray-400 text-xs font-bold line-through leading-none mb-0.5">
+                          {formatIDR(prod.price)}
+                        </span>
+                      )}
+                      <span className={`font-bold text-sm md:text-base ${hasDiscount ? 'text-red-500' : 'text-gray-400'}`}>
+                        {formatIDR(displayPrice)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="px-1 md:px-2 text-left">
-                  <p className="text-[9px] md:text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
-                    {prod.category?.name || prod.category || "General"}
-                  </p>
-                  <h3 className="font-black text-gray-900 text-base md:text-xl uppercase tracking-tighter">
-                    {prod.name}
-                  </h3>
-                  <p className="text-gray-400 font-bold text-sm md:text-base">
-                    {formatIDR(prod.price)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="py-16 md:py-20 text-center bg-white rounded-[2rem] md:rounded-[3rem] border border-dashed border-gray-200">

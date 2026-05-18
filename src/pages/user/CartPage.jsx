@@ -9,13 +9,25 @@ import EmptyCartView from "../../components/features/cart/EmptyCartView";
 
 const CartPage = () => {
   const {
-    cartItems, subtotal, total,
-    handleIncrement, handleDecrement,
-    handleRemove, handleQuantityChange, isEmpty,
+    cartItems,
+    subtotal,
+    total,
+    normalSubtotal,
+    discountTotal,
+    hasDiscount,
+    handleIncrement,
+    handleDecrement,
+    handleRemove,
+    handleQuantityChange,
+    isEmpty,
   } = useCartLogic();
 
   const navigate = useNavigate();
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, itemId: null, itemName: "" });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    itemId: null,
+    itemName: "",
+  });
   const [deletingId, setDeletingId] = useState(null);
 
   const openDeleteModal = (item) =>
@@ -41,7 +53,10 @@ const CartPage = () => {
               onClick={() => navigate("/store")}
               className="flex items-center gap-2 text-gray-400 hover:text-[#2D5A43] mb-3 text-[9px] font-black uppercase tracking-[0.2em] transition-colors group"
             >
-              <ArrowLeft size={13} className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft
+                size={13}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
               Kembali Belanja
             </button>
             <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase leading-tight">
@@ -60,7 +75,11 @@ const CartPage = () => {
                 item={item}
                 isDeleting={deletingId === item.id}
                 onIncrement={() => handleIncrement(item)}
-                onDecrement={() => item.quantity <= 1 ? openDeleteModal(item) : handleDecrement(item)}
+                onDecrement={() =>
+                  item.quantity <= 1
+                    ? openDeleteModal(item)
+                    : handleDecrement(item)
+                }
                 onRemove={() => openDeleteModal(item)}
                 onQuantityChange={handleQuantityChange}
               />
@@ -70,6 +89,9 @@ const CartPage = () => {
             <OrderSummary
               subtotal={subtotal}
               total={total}
+              normalSubtotal={normalSubtotal}
+              discountTotal={discountTotal}
+              hasDiscount={hasDiscount}
               onCheckout={() => navigate("/checkout")}
             />
           </div>
@@ -78,8 +100,12 @@ const CartPage = () => {
       <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-4 pt-3 pb-6 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
           <div className="flex flex-col min-w-0">
-            <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">Total</span>
-            <span className="text-lg font-black text-[#2D5A43] tracking-tighter leading-tight truncate">{total}</span>
+            <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">
+              Total
+            </span>
+            <span className="text-lg font-black text-[#2D5A43] tracking-tighter leading-tight truncate">
+              {total}
+            </span>
           </div>
           <button
             onClick={() => navigate("/checkout")}
@@ -92,7 +118,9 @@ const CartPage = () => {
 
       <ConfirmModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, itemId: null, itemName: "" })}
+        onClose={() =>
+          setDeleteModal({ isOpen: false, itemId: null, itemName: "" })
+        }
         onConfirm={confirmRemove}
         title="Hapus Produk?"
         message={`Hapus "${deleteModal.itemName}" dari keranjang?`}
