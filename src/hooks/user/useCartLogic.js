@@ -43,7 +43,7 @@ export const useCartLogic = () => {
     cartItems,
     cartSummary,
     subtotal: formatIDR(subtotalAfterDiscount),
-    total: formatIDR(grandTotal), // ← fix ini
+    total: formatIDR(grandTotal), 
     normalSubtotal: formatIDR(normalSubtotal),
     discountTotal: formatIDR(discountTotal),
     hasDiscount,
