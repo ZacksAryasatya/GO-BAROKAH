@@ -34,11 +34,14 @@ export const useLoginLogic = () => {
           style: { borderRadius: '16px', background: '#2D5A43', color: '#fff', fontWeight: 'bold' },
         });
 
+        
         setTimeout(() => { 
-          if (user.role === 'admin') {
+          if (user.role === 'owner') {
+            navigate('/owner/dashboard', { replace: true });
+          } else if (user.role === 'admin') {
             navigate('/admin/dashboard', { replace: true });
           } else {
-            navigate('/profile', { replace: true });
+            navigate('/', { replace: true });
           }
         }, 1000);
       }
