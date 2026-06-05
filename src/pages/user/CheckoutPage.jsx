@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ArrowRight,
   Info,
+  FileText, 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { addressService } from "../../services/user/addressService"; 
@@ -29,6 +30,7 @@ const CheckoutPage = () => {
 
   const [userAddresses, setUserAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
@@ -72,7 +74,7 @@ const CheckoutPage = () => {
       method: isPickup ? "AMBIL SENDIRI" : "DIKIRIM",
       address: isPickup ? "Ambil di Toko (Pangkalan Bun)" : alamatDetail,
       addressId: isPickup ? 0 : Number(selectedAddressId),
-      notes: "Tolong kirim secepatnya",
+      notes: orderNotes.trim() !== "" ? orderNotes : undefined, 
       subtotal,
       shippingFee: isPickup ? "Gratis" : shippingFee,
       total,
@@ -88,7 +90,7 @@ const CheckoutPage = () => {
       : subtotal;
 
   return (
-    <div className="bg-[#FBFBFB] min-h-screen pb-36 lg:pb-12 text-left">
+    <div className="bg-[#FBFBFB] min-h-screen pb-36 lg:pb-12 text-left font-sans">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
         <div className="mb-6 lg:mb-8">
           <button
@@ -185,6 +187,7 @@ const CheckoutPage = () => {
                       Lokasi Pengambilan
                     </p>
                     <p className="text-xs text-emerald-900/70 font-medium leading-relaxed">
+                      UD. BAROKAH<br/>
                       Jalan Kecubung No.D136, RT.002, Pasir Panjang, Kec. Arut
                       Sel., Kabupaten Kotawaringin Barat, Kalimantan Tengah
                       74181
@@ -192,6 +195,19 @@ const CheckoutPage = () => {
                   </div>
                 </div>
               )}
+              <div className="pt-2 border-t border-dashed border-gray-200 space-y-2.5 mt-2">
+                <label className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                  <FileText size={11} className="text-[#2D5A43]" /> Catatan Pesanan <span className="lowercase text-gray-300 tracking-normal font-medium">(Opsional)</span>
+                </label>
+                <textarea
+                  placeholder={isPickup ? "Contoh: Tolong siapkan jam 3 sore..." : "Contoh: Titip ke pos satpam jika saya tidak ada di rumah..."}
+                  rows="2"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 outline-none font-bold text-gray-800 text-sm border border-gray-100 focus:border-[#2D5A43]/30 focus:bg-white transition-all resize-none"
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                />
+              </div>
+
             </div>
           </div>
           

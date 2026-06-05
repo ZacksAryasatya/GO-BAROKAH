@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; 
 import { productService } from "../../services/user/productService";
 import { useProductFilter } from "../../hooks/user/useProductFilter";
 import { formatIDR } from "../../utils/formatCurrency";
@@ -119,15 +120,20 @@ const ProductSection = () => {
         </div>
 
         {filteredProducts && filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
             {filteredProducts.map((prod) => {
               const hasDiscount = prod.discount_amount > 0 && prod.final_price > 0 && prod.final_price !== prod.price;
               const displayPrice = hasDiscount ? prod.final_price : prod.price;
               const discountPercent = hasDiscount ? prod.discount_amount : 0;
+              const productId = prod.id || prod._id;
 
               return (
-                <div key={prod.id || prod._id} className="group cursor-pointer">
-                  <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 md:mb-6 transition-all duration-500 group-hover:shadow-2xl">
+                <Link 
+                  to={`/product/${productId}`} 
+                  key={productId} 
+                  className="group cursor-pointer block"
+                >
+                  <div className="relative aspect-[3/4] rounded-2xl md:rounded-[1.5rem] overflow-hidden mb-3 md:mb-4 transition-all duration-500 group-hover:shadow-2xl">
                     <img
                       src={prod.image_url}
                       alt={prod.name}
@@ -138,30 +144,30 @@ const ProductSection = () => {
                       }}
                     />
                     {hasDiscount && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-wider">
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-wider">
                         -{discountPercent}%
                       </div>
                     )}
                   </div>
-                  <div className="px-1 md:px-2 text-left">
-                    <p className="text-[9px] md:text-[10px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
+                  <div className="px-1 text-left">
+                    <p className="text-[8px] md:text-[9px] font-black text-[#2D5A43] uppercase tracking-widest opacity-60">
                       {prod.category?.name || prod.category || "General"}
                     </p>
-                    <h3 className="font-black text-gray-900 text-base md:text-xl uppercase tracking-tighter">
+                    <h3 className="font-black text-gray-900 text-sm md:text-base uppercase tracking-tighter line-clamp-2 mt-0.5 group-hover:text-[#2D5A43] transition-colors">
                       {prod.name}
                     </h3>
-                    <div className="flex flex-col mt-0.5">
+                    <div className="flex flex-col mt-1">
                       {hasDiscount && (
-                        <span className="text-gray-400 text-xs font-bold line-through leading-none mb-0.5">
+                        <span className="text-gray-400 text-[10px] md:text-xs font-bold line-through leading-none mb-0.5">
                           {formatIDR(prod.price)}
                         </span>
                       )}
-                      <span className={`font-bold text-sm md:text-base ${hasDiscount ? 'text-red-500' : 'text-gray-400'}`}>
+                      <span className={`font-bold text-xs md:text-sm ${hasDiscount ? 'text-red-500' : 'text-gray-400'}`}>
                         {formatIDR(displayPrice)}
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from '../../utils/api'; 
+import orderService from '../../services/user/orderService'; 
 import { useCart } from '../../context/CartContext'; 
 
 export const usePaymentLogic = () => {
@@ -10,20 +10,25 @@ export const usePaymentLogic = () => {
     try {
       setLoading(true);
       
-      const payload = {
-        notes: orderData.notes || "Tolong kirim secepatnya"
-      };
+      let response;
+      const isPickup = orderData.addressId === 0 || orderData.addressId === "0";
 
-      if (orderData.addressId !== 0) {
-        payload.address_id = Number(orderData.addressId);
+      if (isPickup) {
+        const payloadPickup = {
+          notes: orderData.notes 
+        };
+        response = await orderService.createPickupOrder(payloadPickup);
+      } else {
+        const payloadDelivery = {
+          notes: orderData.notes || "Tolong kirim secepatnya",
+          address_id: Number(orderData.addressId)
+        };
+        response = await orderService.createDeliveryOrder(payloadDelivery);
       }
-
-      const response = await api.post('/api/orders', payload);
       await loadCart();
-
       navigate('/order-success', {
         replace: true,
-        state: { order: response.data?.data || response.data }
+        state: { order: response?.data || response }
       });
 
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Package, MapPin, CreditCard, ArrowRight, ShoppingBag } from 'lucide-react';
+import { CheckCircle2, Package, MapPin, CreditCard, ArrowRight, ShoppingBag, FileText } from 'lucide-react';
 
 const OrderSuccessPage = () => {
   const { state } = useLocation();
@@ -69,6 +69,19 @@ const OrderSuccessPage = () => {
                 <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{paymentMethod}</p>
               </div>
             </div>
+            {orderRaw.notes && (
+              <div className="flex items-start gap-4 px-6 py-5 bg-amber-50/50">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <FileText size={15} className="text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">Catatan Pesanan</p>
+                  <p className="text-xs text-slate-700 font-medium mt-0.5 leading-relaxed">
+                    "{orderRaw.notes}"
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-4 px-6 py-5">
               <div className="w-9 h-9 rounded-xl bg-[#3A5A4D]/10 flex items-center justify-center shrink-0 mt-0.5">
