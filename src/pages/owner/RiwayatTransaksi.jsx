@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTransactionHistory } from '../../hooks/owner/useTransactionHistory';
 import Sidebar from '../../components/owner/Sidebar';
-import { 
-  Search, ChevronDown, Calendar, CreditCard, Wallet, Banknote 
-} from 'lucide-react';
+import { Search, ChevronDown, Calendar, CreditCard, Wallet, Banknote } from 'lucide-react';
+import { SummaryCard } from '../../components/owner/ui/SummaryCard';
 
 const RiwayatTransaksi = () => {
   const navigate = useNavigate();
@@ -35,52 +34,31 @@ const RiwayatTransaksi = () => {
 
       <main className="flex-1 p-8 overflow-y-auto h-full flex justify-center">
         <div className="w-full max-w-[1300px] space-y-6">
-          
-          {/* HEADER HALAMAN */}
           <div className="space-y-1">
             <h1 className="text-[22px] font-bold text-[#0f1d37] tracking-tight">Riwayat Transaksi</h1>
             <p className="text-xs text-slate-400 font-medium">Lihat semua transaksi yang telah dilakukan</p>
           </div>
 
-          {/* KARTU STATISTIK RINGKASAN */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <SummaryCard 
-              title="Total Transaksi" 
-              value={ringkasanTransaksi.totalNominal} 
-              subtitle={`${ringkasanTransaksi.totalItem.toLocaleString('id-ID')} Transaksi`} 
-              isCurrency 
-            />
+            <SummaryCard title="Total Transaksi" value={ringkasanTransaksi.totalNominal} subtitle={`${ringkasanTransaksi.totalItem.toLocaleString('id-ID')} Transaksi`} isCurrency />
             <SummaryCard title="Menunggu" value={ringkasanTransaksi.menungguCount} subtitle="Menunggu Konfirmasi" isWarning />
             <SummaryCard title="Berhasil" value={ringkasanTransaksi.suksesCount} subtitle="Transaksi Sukses" isSuccess />
             <SummaryCard title="Gagal" value={ringkasanTransaksi.gagalCount} subtitle="Transaksi Gagal" isDanger />
           </section>
 
-          {/* CONTAINER UTAMA TABEL */}
           <section className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(11,22,44,0.03)] border border-slate-100 overflow-hidden">
-            
-            {/* PANEL FILTER BAR */}
             <div className="p-5 flex flex-col sm:flex-row gap-3 justify-between items-center bg-white border-b border-slate-50">
-              
-              {/* Input Pencarian */}
               <div className="relative w-full sm:w-80 group">
                 <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 group-focus-within:text-slate-500" />
                 <input 
-                  type="text" 
-                  placeholder="Cari ID Transaksi, pesanan, atau pelanggan ..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  type="text" placeholder="Cari ID Transaksi, pesanan, atau pelanggan ..." value={searchTerm} onChange={(e) => handleSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-[#f8fafc] border border-transparent rounded-xl text-xs font-medium focus:outline-none focus:border-slate-200 focus:bg-white placeholder:text-slate-400 transition-all text-slate-700"
                 />
               </div>
 
-              {/* Kelompok Dropdown Filter */}
               <div className="flex gap-2.5 w-full sm:w-auto justify-end">
                 <div className="relative">
-                  <select 
-                    value={statusFilter}
-                    onChange={(e) => handleStatusFilter(e.target.value)}
-                    className="appearance-none bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 pl-4 pr-10 py-2.5 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer"
-                  >
+                  <select value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)} className="appearance-none bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 pl-4 pr-10 py-2.5 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer">
                     <option value="Semua Status">Semua Status</option>
                     <option value="Berhasil">Berhasil</option>
                     <option value="Menunggu">Menunggu</option>
@@ -88,13 +66,8 @@ const RiwayatTransaksi = () => {
                   </select>
                   <ChevronDown className="absolute right-3 top-3.5 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
                 </div>
-
                 <div className="relative">
-                  <select 
-                    value={paymentFilter}
-                    onChange={(e) => handlePaymentFilter(e.target.value)}
-                    className="appearance-none bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 pl-4 pr-10 py-2.5 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer"
-                  >
+                  <select value={paymentFilter} onChange={(e) => handlePaymentFilter(e.target.value)} className="appearance-none bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 pl-4 pr-10 py-2.5 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer">
                     <option value="Semua Pembayaran">Semua Pembayaran</option>
                     <option value="Transfer Bank">Transfer Bank</option>
                     <option value="E-Wallet">E-Wallet</option>
@@ -103,10 +76,8 @@ const RiwayatTransaksi = () => {
                   <ChevronDown className="absolute right-3 top-3.5 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
                 </div>
               </div>
-
             </div>
 
-            {/* TABEL DATA FRAMELESS */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
@@ -129,122 +100,48 @@ const RiwayatTransaksi = () => {
                         <td className="py-4 px-6 text-slate-800 font-semibold">{tx.pelanggan}</td>
                         <td className="py-4 px-6 text-slate-400">
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-slate-300" />
-                            <span>{tx.tanggal}</span>
+                            <Calendar className="h-3.5 w-3.5 text-slate-300" /> <span>{tx.tanggal}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2 text-slate-600">
-                            {getPaymentIcon(tx.metode)}
-                            <span>{tx.metode}</span>
+                            {getPaymentIcon(tx.metode)} <span>{tx.metode}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-right font-bold text-[#0f1d37] text-sm">
-                          Rp {tx.jumlah.toLocaleString('id-ID')}
-                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-[#0f1d37] text-sm">Rp {tx.jumlah.toLocaleString('id-ID')}</td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-md text-[11px] font-bold tracking-wide ${
-                            tx.status === "Berhasil" ? "bg-[#eefbf4] text-[#10b981]" :
-                            tx.status === "Menunggu" ? "bg-[#fff9db] text-[#f59f00]" : 
-                            "bg-[#fff5f5] text-[#fa5252]"
-                          }`}>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-md text-[11px] font-bold tracking-wide ${tx.status === "Berhasil" ? "bg-[#eefbf4] text-[#10b981]" : tx.status === "Menunggu" ? "bg-[#fff9db] text-[#f59f00]" : "bg-[#fff5f5] text-[#fa5252]"}`}>
                             {tx.status}
                           </span>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan="7" className="py-16 text-center text-slate-400 font-medium bg-white">
-                        Tidak ada riwayat transaksi yang sesuai filter.
-                      </td>
-                    </tr>
+                    <tr><td colSpan="7" className="py-16 text-center text-slate-400 font-medium bg-white">Tidak ada riwayat transaksi yang sesuai filter.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
 
-            {/* AREA PANEL PAGINASI */}
             <div className="p-4 bg-[#fbfcfd] border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-medium">
-              <span>
-                Menampilkan {paginatedData.length} dari {totalRecords.toLocaleString('id-ID')} transaksi
-              </span>
-
+              <span>Menampilkan {paginatedData.length} dari {totalRecords.toLocaleString('id-ID')} transaksi</span>
               {totalPages > 1 && (
                 <div className="flex items-center gap-2">
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
-                  >
-                    Previous
-                  </button>
-                  
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 font-semibold hover:bg-slate-50 transition-all cursor-pointer">Previous</button>
                   <div className="flex gap-1">
                     {Array.from({ length: totalPages }, (_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs transition-all cursor-pointer ${
-                          currentPage === i + 1 
-                            ? 'bg-[#1e2e4d] text-white' 
-                            : 'text-slate-500 bg-white border border-slate-200 hover:bg-slate-50'
-                        }`}
-                      >
+                      <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs transition-all cursor-pointer ${currentPage === i + 1 ? 'bg-[#1e2e4d] text-white' : 'text-slate-500 bg-white border border-slate-200 hover:bg-slate-50'}`}>
                         {i + 1}
                       </button>
                     ))}
                   </div>
-
-                  <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
-                  >
-                    Next
-                  </button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 font-semibold hover:bg-slate-50 transition-all cursor-pointer">Next</button>
                 </div>
               )}
             </div>
-
           </section>
-
         </div>
       </main>
-    </div>
-  );
-};
-
-// Sub-komponen Summary Card yang Dioptimalkan Secara Visual & Format Otomatis
-const SummaryCard = ({ title, value, subtitle, isCurrency = false, isWarning = false, isSuccess = false, isDanger = false }) => {
-  let cardStyles = "border-slate-100";
-  let textStyles = "text-[#0f1d37]";
-
-  if (isWarning) {
-    cardStyles = "border-amber-100 bg-[#fffdf5]";
-    textStyles = "text-amber-600";
-  } else if (isSuccess) {
-    cardStyles = "border-emerald-100 bg-[#f6fdf9]";
-    textStyles = "text-emerald-600";
-  } else if (isDanger) {
-    cardStyles = "border-rose-100 bg-[#fff8f8]";
-    textStyles = "text-rose-600";
-  }
-
-  // Format value secara otomatis berdasarkan tipe data
-  const formattedValue = typeof value === 'number'
-    ? isCurrency 
-      ? `Rp ${value.toLocaleString('id-ID')}`
-      : value.toLocaleString('id-ID')
-    : value;
-
-  return (
-    <div className={`bg-white p-5 rounded-2xl border ${cardStyles} shadow-[0_2px_8px_rgba(11,22,44,0.02)] space-y-1.5 transition-all`}>
-      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">{title}</span>
-      <span className={`text-[22px] font-black tracking-tight block ${textStyles}`}>
-        {formattedValue}
-      </span>
-      <span className="text-[11px] text-slate-400 block font-medium">{subtitle}</span>
     </div>
   );
 };

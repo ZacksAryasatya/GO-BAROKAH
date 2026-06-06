@@ -1,30 +1,57 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { orderHistoryData } from '../../data/orderHistoryData';
+import orderService from '../../services/user/orderService';
 
 export const useHistoryLogic = () => {
   const navigate = useNavigate();
-  const [allOrders, setAllOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Semua');
-
-  const statuses = ['Semua', 'Menunggu', 'Disiapkan', 'Selesai', 'Dibatalkan', 'Dikirim'];
-
-  useEffect(() => {
-    setAllOrders(orderHistoryData);
-  }, []);
+  const statuses = ['Semua', 'Menunggu', 'Disiapkan', 'Dikirim', 'Selesai', 'Dibatalkan'];
 
   const statusMap = {
-    'Menunggu': 'pending',
-    'Disiapkan': 'processing',
-    'Selesai': 'completed',
-    'Dibatalkan': 'cancelled',
-    'Dikirim': 'shipping' 
+    'Menunggu': 'PENDING',
+    'Disiapkan': 'PROCESSING',
+    'Dikirim': 'SHIPPED',
+    'Selesai': 'COMPLETED',
+    'Dibatalkan': 'CANCELLED'
   };
 
-  const orders = useMemo(() => {
-    if (activeTab === 'Semua') return allOrders;
-    return allOrders.filter(order => order.status.toLowerCase() === statusMap[activeTab]);
-  }, [activeTab, allOrders]);
+  const fetchHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const params = {};
+      if (activeTab !== 'Semua') {
+        params.status = statusMap[activeTab];
+      }
+
+      const response = await orderService.getOrders(params);
+      const apiData = response.data || [];
+      const mappedOrders = apiData.map(order => ({
+        id: order.orderNumber, 
+        dbId: order.id,
+        created_at: order.createdAt,
+        status: order.status, 
+        total_amount: order.grandTotal,
+        notes: order.notes,
+        items: order.items?.map(item => ({
+          name: item.productName,
+          qty: item.quantity,
+          price: item.finalUnitPrice || item.unitPrice || 0
+        })) || []
+      }));
+
+      setOrders(mappedOrders);
+    } catch (error) {
+      console.error("Gagal memuat riwayat pesanan:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -34,16 +61,27 @@ export const useHistoryLogic = () => {
     }).format(amount);
   };
 
+  const handleCancel = async (orderId) => {
+ try {
+      await orderService.cancelOrder(orderId);
+      fetchHistory(); 
+    } catch (error) {
+      console.error("Gagal membatalkan pesanan:", error);
+      alert("Gagal membatalkan pesanan. Coba lagi.");
+    }
+};
   const handleStartShopping = () => navigate('/store');
   const handleViewDetail = (id) => navigate(`/profile/orders/${id}`);
 
   return {
     orders,
+    isLoading,
     activeTab,
     setActiveTab,
     statuses,
     formatCurrency,
     handleStartShopping,
-    handleViewDetail
+    handleViewDetail,
+    handleCancel
   };
 };

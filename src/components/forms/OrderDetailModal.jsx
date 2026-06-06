@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, CreditCard, Calendar, ShoppingCart } from 'lucide-react';
+import { X, Package, CreditCard, Calendar, ShoppingCart, FileText } from 'lucide-react';
 import Button from '../common/Button';
- 
+
 const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
- 
+
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
@@ -17,9 +17,9 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
- 
+
   if (!shouldRender || !order) return null;
- 
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       <div
@@ -34,7 +34,7 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900 leading-none">Rincian Pesanan</h3>
-              <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">{order.invoice_no}</p>
+              <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">{order.id || order.invoice_no}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:rotate-90 duration-300">
@@ -45,7 +45,7 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             {[
               { icon: <Calendar size={12} />, label: "Tanggal", value: new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), delay: "delay-[150ms]" },
-              { icon: <CreditCard size={12} />, label: "Pembayaran", value: order.payment_method, delay: "delay-[200ms]" },
+              { icon: <CreditCard size={12} />, label: "Pembayaran", value: order.payment_method || "Transfer Bank", delay: "delay-[200ms]" },
             ].map(({ icon, label, value, delay }) => (
               <div key={label} className={`p-3 rounded-xl bg-gray-50 border border-gray-100 transition-all duration-500 ${delay} ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <div className="flex items-center gap-2 text-gray-400 mb-1">
@@ -56,20 +56,32 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
               </div>
             ))}
           </div>
+
+          {order.notes && (
+            <div className={`mb-6 p-4 rounded-xl bg-amber-50/50 border border-amber-100 transition-all duration-500 delay-[225ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              <div className="flex items-center gap-1.5 text-amber-600 mb-1.5">
+                <FileText size={12} />
+                <span className="text-[9px] font-black uppercase tracking-widest">Catatan Pesanan</span>
+              </div>
+              <p className="text-xs font-medium text-amber-900 leading-relaxed">
+                "{order.notes}"
+              </p>
+            </div>
+          )}
           <div className={`transition-all duration-500 delay-[250ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
             <div className="flex items-center gap-2 text-gray-400 mb-3 px-1">
               <Package size={12} />
               <span className="text-[9px] font-bold uppercase tracking-wider">Item Produk</span>
             </div>
             <div className="space-y-2">
-              {order.items.map((item, i) => (
+              {order.items?.map((item, i) => (
                 <div
-                  key={item.id}
+                  key={item.id || i}
                   className={`flex justify-between items-center p-3 rounded-xl bg-white border border-gray-50 shadow-sm transition-all duration-500 ${animate ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}
                   style={{ transitionDelay: `${300 + i * 50}ms` }}
                 >
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-gray-900">{item.name}</span>
+                    <span className="text-xs font-bold text-gray-900">{item.name || item.productName}</span>
                     <span className="text-[10px] text-gray-400 font-medium">{formatCurrency(item.price)} x {item.qty}</span>
                   </div>
                   <span className="text-xs font-black text-[#3A5A4D]">{formatCurrency(item.price * item.qty)}</span>
@@ -84,13 +96,12 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
             </div>
           </div>
         </div>
-        <div className={`px-6 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-2 transition-all duration-500 delay-[450ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-          <Button variant="ghost" className="px-5 py-2.5 text-[11px]" onClick={onClose}>Tutup</Button>
-          <Button variant="primary" className="px-6 py-2.5 text-[11px]" onClick={() => window.print()}>Cetak Invoice</Button>
+        <div className={`px-6 py-5 bg-gray-50 border-t border-gray-100 transition-all duration-500 delay-[450ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+          <Button variant="primary" className="w-full py-3 text-[11px]" onClick={onClose}>Tutup</Button>
         </div>
       </div>
     </div>
   );
 };
- 
+
 export default OrderDetailModal;

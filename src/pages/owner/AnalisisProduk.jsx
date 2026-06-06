@@ -3,11 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useProductAnalysis } from '../../hooks/owner/useProductAnalysis';
 import Sidebar from '../../components/owner/Sidebar';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell 
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Package, AlertTriangle, DollarSign, TrendingUp, Search, ArrowLeft, ArrowRight, Download } from 'lucide-react';
+import { MetricCard } from '../../components/owner/ui/MetricCard';
 
 const AnalisisProduk = () => {
   const navigate = useNavigate();
@@ -15,7 +13,7 @@ const AnalisisProduk = () => {
   
   const {
     searchTerm, selectedKategori, currentPage, totalPages, itemsPerPage = 5,
-    ringkasanAnalisis, grafikBatangData, grafikPieData, paginatedData, listKategori = ['Semua', 'Makanan', 'Minuman', 'Sembako'],
+    ringkasanAnalisis, grafikBatangData, grafikPieData, paginatedData, listKategori,
     setCurrentPage, handleSearchChange, handleKategoriChange
   } = useProductAnalysis();
 
@@ -29,20 +27,16 @@ const AnalisisProduk = () => {
 
       <main className="flex-1 p-5 overflow-y-auto h-full flex justify-center transition-all duration-300">
         <div className="w-full max-w-[1400px] space-y-4">
-          
-          {/* HEADER */}
           <header className="flex justify-between items-center">
             <div>
               <h1 className="text-xl font-bold text-slate-900 tracking-tight">Analisis & Rekap Barang</h1>
               <p className="text-xs text-slate-500">Pantau valuasi aset gudang dan performa produk berputar</p>
             </div>
             <button className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-lg hover:bg-slate-50 shadow-xs transition-all cursor-pointer">
-              <Download className="h-3.5 w-3.5 text-slate-500" />
-              Ekspor (.xlsx)
+              <Download className="h-3.5 w-3.5 text-slate-500" /> Ekspor (.xlsx)
             </button>
           </header>
 
-          {/* KARTU RINGKASAN METRIK */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard icon={<Package className="h-4 w-4" />} label="Ragam Produk" value={`${ringkasanAnalisis.totalProduk} Jenis`} />
             <MetricCard icon={<Package className="h-4 w-4 text-blue-600"/>} label="Kuantitas Total Stok" value={`${ringkasanAnalisis.totalStok} Unit`} bg="bg-blue-50" />
@@ -63,9 +57,7 @@ const AnalisisProduk = () => {
             </div>
           </section>
 
-          {/* AREA GRAFIK */}
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Top 5 Chart */}
             <div className="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-200/60 shadow-xs h-64 flex flex-col">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xs font-bold text-slate-900">Top 5 Produk Terlaris</h3>
@@ -75,14 +67,7 @@ const AnalisisProduk = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={grafikBatangData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    {/* Menggunakan fungsi formatter untuk memotong nama produk yang terlalu panjang di grafik */}
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="#94a3b8" 
-                      fontSize={9} 
-                      tickLine={false} 
-                      tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 10)}...` : value}
-                    />
+                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={9} tickLine={false} tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 10)}...` : value} />
                     <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
                     <Tooltip className="text-xs font-sans" />
                     <Bar dataKey="Total Terjual" fill="#265345" radius={[4, 4, 0, 0]} barSize={24} />
@@ -91,7 +76,6 @@ const AnalisisProduk = () => {
               </div>
             </div>
 
-            {/* Kategori Pie Chart */}
             <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-xs h-64 flex flex-col">
               <h3 className="text-xs font-bold text-slate-900 mb-1">Porsi Kategori Gudang</h3>
               <div className="flex-1 min-h-0 w-full flex items-center justify-center relative">
@@ -115,28 +99,20 @@ const AnalisisProduk = () => {
             </div>
           </section>
 
-          {/* TABEL INTERAKTIF */}
           <section className="bg-white rounded-xl border border-slate-200/60 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3 justify-between items-center">
               <div className="relative w-full sm:w-72">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                 <input 
-                  type="text" 
-                  placeholder="Cari produk atau supplier..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
+                  type="text" placeholder="Cari produk atau supplier..." value={searchTerm} onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-slate-400"
                 />
               </div>
 
               <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto py-1">
                 {listKategori.map((kat) => (
-                  <button
-                    key={kat}
-                    onClick={() => handleKategoriChange(kat)}
-                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all cursor-pointer shrink-0 ${
-                      selectedKategori === kat ? 'bg-[#265345] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
+                  <button key={kat} onClick={() => handleKategoriChange(kat)}
+                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all cursor-pointer shrink-0 ${selectedKategori === kat ? 'bg-[#265345] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
                     {kat}
                   </button>
@@ -161,7 +137,6 @@ const AnalisisProduk = () => {
                   {paginatedData.length > 0 ? (
                     paginatedData.map((produk, idx) => (
                       <tr key={produk.id} className="hover:bg-slate-50/40 transition-colors">
-                        {/* Perbaikan rumus index urutan tabel menggunakan variabel dinamis itemsPerPage */}
                         <td className="p-3 pl-4 text-center font-medium text-slate-400">
                           {(currentPage - 1) * itemsPerPage + idx + 1}
                         </td>
@@ -188,34 +163,19 @@ const AnalisisProduk = () => {
               </table>
             </div>
 
-            {/* PAGINASI */}
             {totalPages > 1 && (
               <div className="p-3 border-t border-slate-100 flex items-center justify-between bg-white text-xs">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50 font-semibold cursor-pointer"
-                >
+                <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} className="flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50 font-semibold cursor-pointer">
                   <ArrowLeft className="h-3 w-3" /> Previous
                 </button>
                 <div className="flex gap-1">
                   {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-6 h-6 rounded flex items-center justify-center font-bold text-[11px] cursor-pointer ${
-                        currentPage === i + 1 ? 'bg-[#265345] text-white shadow-xs' : 'text-slate-500 hover:bg-slate-100'
-                      }`}
-                    >
+                    <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`w-6 h-6 rounded flex items-center justify-center font-bold text-[11px] cursor-pointer ${currentPage === i + 1 ? 'bg-[#265345] text-white shadow-xs' : 'text-slate-500 hover:bg-slate-100'}`}>
                       {i + 1}
                     </button>
                   ))}
                 </div>
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50 font-semibold cursor-pointer"
-                >
+                <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} className="flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50 font-semibold cursor-pointer">
                   Next <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
@@ -227,15 +187,5 @@ const AnalisisProduk = () => {
     </div>
   );
 };
-
-const MetricCard = ({ icon, label, value, bg = "bg-slate-100", textStyle = "text-slate-600" }) => (
-  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-xs flex items-center gap-3">
-    <div className={`p-2.5 rounded-lg ${bg} ${textStyle} flex items-center justify-center shrink-0`}>{icon}</div>
-    <div>
-      <span className="text-[10px] font-bold text-slate-400 uppercase block">{label}</span>
-      <span className="text-xl font-black text-slate-900">{value}</span>
-    </div>
-  </div>
-);
 
 export default AnalisisProduk;

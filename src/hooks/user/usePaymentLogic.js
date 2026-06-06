@@ -20,7 +20,7 @@ export const usePaymentLogic = () => {
         response = await orderService.createPickupOrder(payloadPickup);
       } else {
         const payloadDelivery = {
-          notes: orderData.notes || "Tolong kirim secepatnya",
+          notes: orderData.notes,
           address_id: Number(orderData.addressId)
         };
         response = await orderService.createDeliveryOrder(payloadDelivery);

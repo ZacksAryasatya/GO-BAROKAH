@@ -3,11 +3,22 @@ import { ClipboardList, Eye, ShoppingBag, Package } from "lucide-react";
 import { useHistoryLogic } from "../../hooks/user/useHistoryLogic";
 import Button from "../../components/common/Button";
 import OrderDetailModal from "../../components/forms/OrderDetailModal";
+import ConfirmModal from "../../components/forms/ConfirmModal";
 
 const HistoryPage = () => {
-  const { orders, activeTab, setActiveTab, statuses, formatCurrency, handleStartShopping } = useHistoryLogic();
+  const {
+    orders,
+    activeTab,
+    setActiveTab,
+    statuses,
+    formatCurrency,
+    handleStartShopping,
+    handleCancel,
+  } = useHistoryLogic();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [cancelData, setCancelData] = useState({ isOpen: false, orderId: null });
 
   const handleOpenDetail = (id) => {
     const order = orders.find((o) => o.id === id);
@@ -15,14 +26,29 @@ const HistoryPage = () => {
     setIsModalOpen(true);
   };
 
+  const openCancelModal = (id) => {
+    setCancelData({ isOpen: true, orderId: id });
+  };
+
+  const confirmCancel = async () => {
+    await handleCancel(cancelData.orderId);
+    setCancelData({ isOpen: false, orderId: null });
+  };
+
   const getStatusStyle = (status) => {
     switch (status.toLowerCase()) {
-      case "completed": return "bg-[#E8F5EE] text-[#2D5A43]";
-      case "processing": return "bg-blue-50 text-blue-600";
-      case "pending": return "bg-amber-50 text-amber-600";
-      case "cancelled": return "bg-red-50 text-red-500";
-      case "shipping": return "bg-orange-50 text-orange-500";
-      default: return "bg-gray-50 text-gray-400";
+      case "completed":
+        return "bg-[#E8F5EE] text-[#2D5A43]";
+      case "processing":
+        return "bg-blue-50 text-blue-600";
+      case "pending":
+        return "bg-amber-50 text-amber-600";
+      case "cancelled":
+        return "bg-red-50 text-red-500";
+      case "shipping":
+        return "bg-orange-50 text-orange-500";
+      default:
+        return "bg-gray-50 text-gray-400";
     }
   };
 
@@ -36,7 +62,9 @@ const HistoryPage = () => {
           <h3 className="text-xl font-black text-gray-900 tracking-tight">
             Riwayat <span className="text-[#2D5A43]">Pesanan.</span>
           </h3>
-          <p className="text-sm text-gray-400 mt-0.5 font-medium">Pantau status dan riwayat belanja Anda</p>
+          <p className="text-sm text-gray-400 mt-0.5 font-medium">
+            Pantau status dan riwayat belanja Anda
+          </p>
         </div>
       </header>
       <div className="flex gap-2 mb-8 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
@@ -57,7 +85,7 @@ const HistoryPage = () => {
 
       <div className="space-y-4">
         {orders.length > 0 ? (
-          orders.map(({ id, created_at, status, items, total_amount }) => (
+          orders.map(({ id, dbId, created_at, status, items, total_amount }) => (
             <div
               key={id}
               className="border border-gray-100 rounded-[20px] overflow-hidden hover:border-gray-200 hover:shadow-lg hover:shadow-black/[0.03] transition-all duration-300"
@@ -68,15 +96,21 @@ const HistoryPage = () => {
                     <ClipboardList size={16} />
                   </div>
                   <div>
-                    <p className="font-black text-[13px] text-gray-900 leading-none">{id}</p>
+                    <p className="font-black text-[13px] text-gray-900 leading-none">
+                      {id}
+                    </p>
                     <p className="text-[11px] text-gray-400 font-medium mt-1">
                       {new Date(created_at).toLocaleDateString("id-ID", {
-                        day: "numeric", month: "long", year: "numeric",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
                       })}
                     </p>
                   </div>
                 </div>
-                <span className={`text-[10px] px-3 py-1.5 rounded-xl font-black uppercase tracking-wider w-fit ${getStatusStyle(status)}`}>
+                <span
+                  className={`text-[10px] px-3 py-1.5 rounded-xl font-black uppercase tracking-wider w-fit ${getStatusStyle(status)}`}
+                >
                   {status}
                 </span>
               </div>
@@ -85,8 +119,12 @@ const HistoryPage = () => {
                   <div key={idx} className="flex justify-between items-center">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#2D5A43]/20 shrink-0" />
-                      <span className="text-[13px] text-gray-600 font-medium truncate">{item.name}</span>
-                      <span className="text-[11px] text-gray-400 font-bold shrink-0">×{item.qty}</span>
+                      <span className="text-[13px] text-gray-600 font-medium truncate">
+                        {item.name}
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-bold shrink-0">
+                        ×{item.qty}
+                      </span>
                     </div>
                     <span className="text-[13px] font-black text-gray-900 ml-3 shrink-0">
                       {formatCurrency(item.price * item.qty)}
@@ -96,10 +134,23 @@ const HistoryPage = () => {
               </div>
               <div className="px-5 py-4 bg-[#F8FAF9]/40 border-t border-gray-50 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Total Pesanan</p>
-                  <p className="text-lg font-black text-[#2D5A43] tracking-tight">{formatCurrency(total_amount)}</p>
+                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">
+                    Total Pesanan
+                  </p>
+                  <p className="text-lg font-black text-[#2D5A43] tracking-tight">
+                    {formatCurrency(total_amount)}
+                  </p>
                 </div>
                 <div className="flex gap-2">
+                  {status.toUpperCase() === "PENDING" && (
+                    <Button
+                      variant="outline"
+                      className="px-5 py-2.5 text-[11px] text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
+                      onClick={() => openCancelModal(dbId)} 
+                    >
+                      Batalkan
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => handleOpenDetail(id)}
@@ -123,11 +174,17 @@ const HistoryPage = () => {
             <div className="p-7 bg-gray-50 rounded-full mb-5">
               <ShoppingBag size={36} className="text-gray-200" />
             </div>
-            <h4 className="text-lg font-black text-gray-900 tracking-tight">Belum Ada Pesanan</h4>
+            <h4 className="text-lg font-black text-gray-900 tracking-tight">
+              Belum Ada Pesanan
+            </h4>
             <p className="text-[13px] text-gray-400 max-w-[220px] mt-2 mb-8 leading-relaxed">
               Belum ada pesanan di kategori ini.
             </p>
-            <Button variant="primary" onClick={handleStartShopping} className="px-8 py-3 text-[12px]">
+            <Button
+              variant="primary"
+              onClick={handleStartShopping}
+              className="px-8 py-3 text-[12px]"
+            >
               Mulai Belanja
             </Button>
           </div>
@@ -139,6 +196,16 @@ const HistoryPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formatCurrency={formatCurrency}
+      />
+
+      <ConfirmModal 
+        isOpen={cancelData.isOpen}
+        onClose={() => setCancelData({ isOpen: false, orderId: null })}
+        onConfirm={confirmCancel}
+        title="Batalkan Pesanan"
+        message="Apakah Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat diurungkan."
+        confirmText="Ya, Batalkan"
+        variant="danger"
       />
     </div>
   );

@@ -11,10 +11,14 @@ const orderService = {
     return response.data;
   },
 
-  getOrders: async () => {
-    const response = await api.get('/api/orders');
+  getOrders: async (params = {}) => {
+    const response = await api.get('/api/orders', { params });
     return response.data;
-  }
+  },
+  cancelOrder: async (orderId) => {
+    const response = await api.patch(`/api/orders/${orderId}/cancel`);
+    return response.data;
+  },
 };
 
 export default orderService;

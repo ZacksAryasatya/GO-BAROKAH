@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+
+// MOCK DATA UTAMA
+const MOCK_ORDERS = [
+  { id: "ORD-001", customer: "Adika imut", idCust: "CUST-001", date: "24/02/2026 14:30", items: 5, total: 1000000, status: "Menunggu" },
+  { id: "ORD-002", customer: "Adika imut", idCust: "CUST-001", date: "24/02/2026 14:30", items: 5, total: 1000000, status: "Sedang Disiapkan" }
+];
+
+const MOCK_PRODUCTS = [
+  { no: 1, name: "Beras Mawar 24Kg" },
+  { no: 2, name: "Aqua 1L" },
+  { no: 3, name: "Gula merah kardus" },
+  { no: 4, name: "Indomie Goreng" }
+];
 
 export const useOwnerDashboard = () => {
   const { user } = useAuth();
@@ -8,54 +20,30 @@ export const useOwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // Expose mock data ke UI
+  const [recentOrders] = useState(MOCK_ORDERS);
+  const [topProducts] = useState(MOCK_PRODUCTS);
+
   useEffect(() => {
-    const controller = new AbortController();
+    // Simulasi loading API (0.8 detik)
+    const timer = setTimeout(() => {
+      setStats({
+        totalOrders: 156,
+        revenue: 45000000,
+        users: 32
+      });
+      setLoading(false);
+    }, 800);
 
-    const fetchDashboardStats = async () => {
-      try {
-        setLoading(true);
-        
-        
-        const statsRes = await api.get('/api/products/stats', { 
-          signal: controller.signal 
-        }).catch((err) => {
-          if (err.name === 'CanceledError') return { data: null };
-          
-          console.warn("Endpoint statistik backend belum siap/error:", err);
-          return { data: null };
-        });
-
-        const statsData = statsRes?.data?.data || statsRes?.data;
-        
-        if (statsData) {
-          setStats({
-            totalOrders: statsData.totalOrders ?? 0,
-            revenue: statsData.revenue ?? 0,
-            users: statsData.users ?? 0
-          });
-        }
-      } catch (error) {
-        if (error.name !== 'CanceledError') {
-          console.error("Dashboard Fetch Error:", error);
-          setMessage({ type: 'error', text: 'Gagal memuat statistik dari server.' });
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardStats();
-
-   
-    return () => {
-      controller.abort();
-    };
+    return () => clearTimeout(timer);
   }, []); 
 
   return {
     profile: user,
     stats,
     loading,
-    message
+    message,
+    recentOrders,
+    topProducts
   };
 };
