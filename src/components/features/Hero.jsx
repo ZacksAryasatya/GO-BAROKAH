@@ -1,49 +1,87 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag, Package } from "lucide-react";
 import petaniImg from "../../assets/img/petani.jpg";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const storedUser = JSON.parse(localStorage.getItem("user_session"));
+  const userName = storedUser?.name || storedUser?.username;
 
-  return (
-    <section className="relative w-full bg-[#FBFBFB] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6 md:py-0 md:min-h-[85vh] flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-12">
-        <div className="flex-1 space-y-6 md:space-y-8 z-10 order-2 md:order-1 self-start md:self-center">
-          <div className="space-y-3 md:space-y-4">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[0.9] tracking-tighter uppercase">
-              KUALITAS <br />
-              <span className="text-[#2D5A43]">UTAMA,</span> <br />
-              HARGA <br />
-              <span className="text-[#2D5A43]">BAROKAH.</span>
-            </h1>
-            <p className="text-gray-500 text-[13px] font-medium max-w-sm leading-relaxed">
-              Penyedia bahan pangan segar kualitas unggulan untuk kebutuhan bisnis dan keluarga Anda. Segar setiap hari, jujur dalam harga, dan terpercaya dalam pelayanan.
+  if (token) {
+    return (
+      <section className="w-full bg-white border-b border-gray-100 py-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          
+          <div className="flex-1">
+            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1">
+              Selamat datang kembali
+            </p>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-tight">
+              Halo, <span className="text-[#2D5A43]">{userName}</span>
+            </h2>
+            <p className="text-gray-500 text-sm font-medium mt-2">
+              Pantau pesanan Anda atau kembali berbelanja kebutuhan hari ini.
             </p>
           </div>
-
-          <button
-            onClick={() => navigate("/store")}
-            className="flex items-center gap-4 group w-fit"
-          >
-            <div className="bg-gray-900 text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest group-hover:bg-[#2D5A43] transition-all duration-300">
-              Belanja Sekarang
-            </div>
-            <div className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#2D5A43] group-hover:text-[#2D5A43] transition-all">
-              <ArrowRight size={18} />
-            </div>
-          </button>
+          
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => navigate("/profile/orders")}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 font-bold text-[11px] uppercase tracking-widest transition-all"
+            >
+              <Package size={15} />
+              Riwayat
+            </button>
+            <button
+              onClick={() => navigate("/store")}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2D5A43] text-white hover:bg-[#244a36] font-bold text-[11px] uppercase tracking-widest transition-all shadow-md shadow-[#2D5A43]/20"
+            >
+              <ShoppingBag size={15} />
+              Belanja
+            </button>
+          </div>
+          
         </div>
-        <div className="w-full md:flex-1 h-64 sm:h-80 md:h-[70vh] relative order-1 md:order-2">
-          <div className="w-full h-full rounded-[2rem] md:rounded-[3rem] overflow-hidden">
-            <img
-              src={petaniImg}
-              alt="Fresh Produce"
-              className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700"
-            />
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative w-full bg-[#FBFBFB] py-12 md:py-20 flex items-center">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full flex flex-col md:flex-row items-center gap-12">
+        <div className="flex-1 space-y-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl lg:text-[60px] font-black text-gray-900 leading-[0.95] tracking-tighter uppercase">
+              Kualitas <br />
+              <span className="text-[#2D5A43]">Utama,</span> <br />
+              Harga <br />
+              <span className="text-[#2D5A43]">Barokah.</span>
+            </h1>
+          </div>
+          
+          <p className="text-gray-500 text-sm font-medium max-w-sm leading-relaxed">
+            Distributor bahan pangan terpercaya. Kami hadir untuk memenuhi kebutuhan bisnis Anda dengan pelayanan jujur dan harga bersaing.
+          </p>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/store")}
+              className="bg-gray-900 text-white px-7 py-3.5 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-[#2D5A43] transition-all"
+            >
+              Belanja Sekarang
+            </button>
           </div>
         </div>
+
+        <div className="w-full md:w-1/2 h-[400px] relative">
+          <img
+            src={petaniImg}
+            alt="Fresh Produce"
+            className="w-full h-full object-cover rounded-[2rem] shadow-xl"
+          />
+        </div>
       </div>
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F6F8F7] -z-10 hidden md:block" />
     </section>
   );
 };

@@ -31,7 +31,7 @@ const AddressModal = ({
   formData,
   onChange,
   isEdit,
-  isLoading, 
+  isLoading,
 }) => {
   const [position, setPosition] = useState([-2.689, 111.621]);
   const [animate, setAnimate] = useState(false);
@@ -116,7 +116,9 @@ const AddressModal = ({
       />
       <div
         className={`relative bg-white w-full max-w-xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] transform ${
-          animate ? "scale-100 translate-y-0 opacity-100" : "scale-90 translate-y-10 opacity-0"
+          animate
+            ? "scale-100 translate-y-0 opacity-100"
+            : "scale-90 translate-y-10 opacity-0"
         }`}
       >
         <div className="p-6 px-10 border-b border-gray-50 flex justify-between items-center bg-white shrink-0">
@@ -132,7 +134,10 @@ const AddressModal = ({
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
           >
-            <X size={20} className="text-gray-400 group-hover:rotate-90 transition-transform duration-300" />
+            <X
+              size={20}
+              className="text-gray-400 group-hover:rotate-90 transition-transform duration-300"
+            />
           </button>
         </div>
         <form
@@ -180,8 +185,8 @@ const AddressModal = ({
                 style={{ height: "100%", width: "100%" }}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                  attribution="&copy; CARTO"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                 />
                 <LocationPicker />
                 <RecenterMap lat={position[0]} lng={position[1]} />
@@ -220,11 +225,11 @@ const AddressModal = ({
             >
               Batal
             </button>
-            
+
             <Button
               type="submit"
               variant="primary"
-              isLoading={isLoading} 
+              isLoading={isLoading}
               className="flex-[2] py-4 rounded-2xl shadow-xl shadow-green-900/10"
             >
               {isEdit ? "Simpan Perubahan" : "Tambah Alamat Baru"}
