@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react"; 
 import { useCheckoutLogic } from "../../hooks/user/useCheckoutLogic";
-import {
-  MapPin,
-  Truck,
-  Store,
-  User,
-  ChevronLeft,
-  ArrowRight,
-  Info,
-  FileText, 
-} from "lucide-react";
+import { Truck, Store, User, ChevronLeft, ArrowRight, Info, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { addressService } from "../../services/user/addressService"; 
+
+import CustomAddressSelector from "../../components/forms/CustomAddressSelector"; 
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -60,7 +53,7 @@ const CheckoutPage = () => {
     if (!isPickup) {
       fetchUserAddresses();
     }
-  }, [isPickup, setAlamatDetail, namaPenerima, setNamaPenerima]);
+  }, [isPickup]); 
 
   const isFormValid = namaPenerima && (isPickup || selectedAddressId);
 
@@ -83,11 +76,7 @@ const CheckoutPage = () => {
     navigate("/payment", { state: { orderData } });
   };
 
-  const displayTotal = isPickup
-    ? subtotal
-    : selectedAddressId
-      ? total
-      : subtotal;
+  const displayTotal = isPickup ? subtotal : selectedAddressId ? total : subtotal;
 
   return (
     <div className="bg-[#FBFBFB] min-h-screen pb-36 lg:pb-12 text-left font-sans">
@@ -97,10 +86,7 @@ const CheckoutPage = () => {
             onClick={() => navigate("/cart")}
             className="flex items-center gap-1.5 text-gray-400 hover:text-[#2D5A43] mb-3 text-[9px] font-black uppercase tracking-[0.2em] transition-colors group"
           >
-            <ChevronLeft
-              size={14}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
+            <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
             Keranjang
           </button>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">
@@ -142,43 +128,15 @@ const CheckoutPage = () => {
               </div>
               
               {!isPickup ? (
-                <div className="space-y-3">
-                  <label className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                    <MapPin size={11} className="text-[#2D5A43]" /> Pilih Alamat Terdaftar
-                  </label>
-
-                  <select
-                    value={selectedAddressId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setSelectedAddressId(id);
-                      
-                      const found = userAddresses.find((a) => a.id?.toString() === id.toString());
-
-                      if (found) {
-                        setAlamatDetail(found.addressDetail || "");
-                      }
-                    }}
-                    className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 outline-none font-black text-gray-700 cursor-pointer text-sm border border-gray-100 focus:border-[#2D5A43]/30 focus:bg-white transition-all"
-                  >
-                    <option value="" disabled>
-                      Pilih alamat pengiriman
-                    </option>
-                    {userAddresses.map((addr) => (
-                      <option key={addr.id} value={addr.id}>
-                        {addr.label || "Alamat"} - {addr.recipientName || namaPenerima} ({addr.recipientPhone || "No HP"})
-                      </option>
-                    ))}
-                  </select>
-
-                  <textarea
-                    placeholder="Detail Alamat (Akan terisi otomatis dari pilihan diatas)"
-                    rows="3"
-                    className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 outline-none font-bold text-gray-800 text-sm border border-gray-100 focus:border-[#2D5A43]/30 focus:bg-white transition-all resize-none"
-                    value={alamatDetail}
-                    onChange={(e) => setAlamatDetail(e.target.value)}
-                  />
-                </div>
+                <CustomAddressSelector 
+                  userAddresses={userAddresses}
+                  selectedAddressId={selectedAddressId}
+                  setSelectedAddressId={setSelectedAddressId}
+                  alamatDetail={alamatDetail}
+                  setAlamatDetail={setAlamatDetail}
+                  namaPenerima={namaPenerima}
+                  setNamaPenerima={setNamaPenerima} 
+                />
               ) : (
                 <div className="px-4 py-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-3">
                   <Info className="text-[#2D5A43] shrink-0 mt-0.5" size={16} />
@@ -195,6 +153,7 @@ const CheckoutPage = () => {
                   </div>
                 </div>
               )}
+              
               <div className="pt-2 border-t border-dashed border-gray-200 space-y-2.5 mt-2">
                 <label className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">
                   <FileText size={11} className="text-[#2D5A43]" /> Catatan Pesanan <span className="lowercase text-gray-300 tracking-normal font-medium">(Opsional)</span>
@@ -207,7 +166,6 @@ const CheckoutPage = () => {
                   onChange={(e) => setOrderNotes(e.target.value)}
                 />
               </div>
-
             </div>
           </div>
           
@@ -216,7 +174,6 @@ const CheckoutPage = () => {
               <h3 className="text-sm font-black mb-5 text-gray-900 uppercase tracking-widest">
                 Ringkasan <span className="text-[#2D5A43]">Order</span>
               </h3>
-
               <div className="space-y-3 mb-5 text-[11px] uppercase tracking-widest font-black">
                 <div className="flex justify-between text-gray-400">
                   <span>Subtotal</span>
@@ -225,11 +182,7 @@ const CheckoutPage = () => {
                 <div className="flex justify-between text-gray-400">
                   <span>Ongkir</span>
                   <span className="text-[#2D5A43]">
-                    {isPickup
-                      ? "Gratis"
-                      : selectedAddressId
-                        ? shippingFee
-                        : "—"}
+                    {isPickup ? "Gratis" : selectedAddressId ? shippingFee : "—"}
                   </span>
                 </div>
                 <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
@@ -239,17 +192,13 @@ const CheckoutPage = () => {
                   </span>
                 </div>
               </div>
-
               <button
                 disabled={!isFormValid}
                 onClick={handleNextStep}
                 className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-[#2D5A43] text-white flex items-center justify-center gap-2 hover:bg-[#234735] shadow-lg shadow-emerald-900/10 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all active:scale-95 group"
               >
                 Lanjut Pembayaran
-                <ArrowRight
-                  size={15}
-                  className="group-hover:translate-x-0.5 transition-transform"
-                />
+                <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </aside>
@@ -273,9 +222,7 @@ const CheckoutPage = () => {
 
           <div className="flex items-center gap-3">
             <div className="flex flex-col min-w-0">
-              <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">
-                Total
-              </span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">Total</span>
               <span className="text-base font-black text-[#2D5A43] tracking-tighter leading-tight truncate">
                 {displayTotal}
               </span>

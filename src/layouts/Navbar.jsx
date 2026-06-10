@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,10 @@ const Navbar = () => {
   const { totalItems } = useCart();
   const { user } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
+  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -30,6 +33,10 @@ const Navbar = () => {
   const mobileSearchRef = useRef(null);
 
   const closeAll = () => { setMenuOpen(false); setSearchOpen(false); };
+
+  useEffect(() => {
+    setSearchValue(searchParams.get('search') || '');
+  }, [searchParams]);
 
   useEffect(() => { closeAll(); }, [pathname]);
 
@@ -49,6 +56,16 @@ const Navbar = () => {
     if (searchOpen) setTimeout(() => mobileSearchRef.current?.focus(), 300);
   }, [searchOpen]);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      navigate(`/store?search=${encodeURIComponent(searchValue.trim())}`);
+      setSearchOpen(false);
+    } else {
+      navigate('/store');
+    }
+  };
+
   const isActive = (path) => pathname === path;
   const displayName = (user?.name || user?.username || '').split(' ')[0] || 'User';
   const navLinkClass = (path, base) =>
@@ -66,12 +83,25 @@ const Navbar = () => {
           <h1 className="text-[#2D5A43] text-xl sm:text-2xl font-black tracking-tighter leading-none uppercase">UD. Barokah</h1>
           <div className="w-full h-[3px] bg-gradient-to-r from-yellow-400 to-transparent mt-0.5 opacity-70 rounded-full" />
         </Link>
-        <div className="hidden md:flex flex-1 min-w-0 max-w-sm relative mx-4">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-          <input type="text" placeholder="Cari produk..."
-            className="w-full bg-gray-50 border border-transparent rounded-full py-2 pl-11 pr-4 text-xs focus:bg-white focus:ring-2 focus:ring-[#2D5A43]/20 focus:border-[#2D5A43]/30 transition-all outline-none font-medium placeholder:text-gray-400"
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 min-w-0 max-w-xl relative mx-8 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-[#2D5A43] transition-colors pointer-events-none" />
+          <input 
+            type="text" 
+            placeholder="Cari kebutuhan pangan segar..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="w-full bg-gray-50/60 border border-gray-200/80 rounded-full py-2.5 pl-11 pr-10 text-xs font-medium transition-all duration-300 outline-none placeholder:text-gray-400 focus:bg-white focus:border-[#2D5A43] focus:ring-4 focus:ring-[#2D5A43]/5 shadow-sm shadow-black/[0.01]"
           />
-        </div>
+          {searchValue && (
+            <button
+              type="button"
+              onClick={() => setSearchValue('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </form>
         <div className="hidden lg:flex items-center gap-6 flex-shrink-0">
           <ul className="flex items-center gap-6">
             {NAV_LINKS.map(({ to, label }) => (
@@ -126,11 +156,25 @@ const Navbar = () => {
       <div className={`md:hidden overflow-hidden transition-all duration-300 bg-white ${
         searchOpen ? 'max-h-20 opacity-100 border-t border-gray-100 py-3' : 'max-h-0 opacity-0'
       }`}>
-        <div className="px-4">
-          <input ref={mobileSearchRef} type="text" placeholder="Cari produk organik..."
-            className="w-full bg-gray-50 rounded-xl py-2.5 px-5 text-sm outline-none focus:ring-2 focus:ring-[#2D5A43]/20 border border-transparent focus:border-[#2D5A43]/20 transition-all"
+        <form onSubmit={handleSearch} className="px-4 relative">
+          <input 
+            ref={mobileSearchRef} 
+            type="text" 
+            placeholder="Cari produk..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="w-full bg-gray-50 rounded-xl py-2.5 pl-5 pr-10 text-sm font-medium outline-none border border-transparent focus:bg-white focus:border-[#2D5A43] focus:ring-4 focus:ring-[#2D5A43]/5 transition-all"
           />
-        </div>
+          {searchValue && (
+            <button
+              type="button"
+              onClick={() => setSearchValue('')}
+              className="absolute right-7 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </form>
       </div>
       <div className={`lg:hidden overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out bg-white border-t border-gray-100 ${
         menuOpen ? 'max-h-72 opacity-100 shadow-xl' : 'max-h-0 opacity-0'

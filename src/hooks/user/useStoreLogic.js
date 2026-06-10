@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"; // <-- Tambah ini untuk ngebaca URL
 import { productService } from "../../services/user/productService";
 import { API_URL } from "../../utils/api";
  
@@ -7,7 +8,9 @@ export const useStoreLogic = () => {
   const [filter, setFilter] = useState([]);
   const [limit, setLimit] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
- 
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
+
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -40,13 +43,16 @@ export const useStoreLogic = () => {
     setFilter((prev) => prev.includes(cat) ? prev.filter((x) => x !== cat) : [...prev, cat]);
     setLimit(6);
   }, []);
- 
+
   const filteredDataResult = useMemo(() => {
-    return filter.length === 0 ? products : products.filter((p) => {
+    return products.filter((p) => {
       const categoryName = typeof p.category === 'object' ? p.category.name : p.category;
-      return filter.includes(categoryName);
+      const matchCategory = filter.length === 0 || filter.includes(categoryName);
+      const matchSearch = p.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchCategory && matchSearch;
     });
-  }, [filter, products]);
+  }, [filter, products, searchQuery]); 
  
   return {
     filter, categories, isLoading,
@@ -57,5 +63,6 @@ export const useStoreLogic = () => {
     loadMore: () => setLimit((prev) => prev + 3),
     clearFilter: () => { setFilter([]); setLimit(6); },
     refreshProducts: fetchProducts,
+    searchQuery, 
   };
 };
