@@ -13,11 +13,6 @@ const ProductCard = ({ product }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const isInCart = user && cartItems.some((item) => item.id === product.id);
-  console.log(product.name, {
-    discount_amount: product.discount_amount,
-    final_price: product.final_price,
-    price: product.price,
-  });
 
   const hasDiscount =
     product.discount_amount > 0 &&

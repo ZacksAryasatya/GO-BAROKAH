@@ -48,7 +48,7 @@ const OrderSummary = ({ subtotal, total, normalSubtotal, discountTotal, shipping
       onClick={onCheckout}
       className="w-full bg-[#2D5A43] text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#234735] transition-all active:scale-95 shadow-lg shadow-green-900/10"
     >
-      Lanjut ke Pembayaran <ArrowRight size={17} />
+      Lanjut ke Checkout <ArrowRight size={17} />
     </button>
   </div>
 );

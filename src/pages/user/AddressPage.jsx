@@ -14,7 +14,7 @@ const AddressPage = () => {
   const [editId, setEditId] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, addressId: null });
   const [formData, setFormData] = useState({
-    label: "", recipient_name: "", recipient_phone: "", address_detail: "", is_default: false,
+    label: "", recipient_name: "", recipient_phone: "", address_detail: "", courier_note: "", is_default: false,
   });
 
   const handleInputChange = (e) => {
@@ -32,16 +32,22 @@ const AddressPage = () => {
   const openModal = (item = null) => {
     if (item) {
       setEditId(item.id || item._id);
+      // PERBAIKAN: Tambahin courier_note, latitude, longitude biar pas diedit datanya muncul di modal & peta
       setFormData({
         label: item.label || "",
         recipient_name: item.recipientName || item.recipient_name || "",
         recipient_phone: item.recipientPhone || item.recipient_phone || "",
         address_detail: item.addressDetail || item.address_detail || "",
+        courier_note: item.courierNote || item.courier_note || "",
+        latitude: item.latitude || null,
+        longitude: item.longitude || null,
         is_default: item.isDefault || false,
       });
     } else {
       setEditId(null);
-      setFormData({ label: "", recipient_name: "", recipient_phone: "", address_detail: "", is_default: false });
+      setFormData({ 
+        label: "", recipient_name: "", recipient_phone: "", address_detail: "", courier_note: "", is_default: false 
+      });
     }
     setIsModalOpen(true);
   };
@@ -161,9 +167,11 @@ const AddressPage = () => {
       <AddressModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (await handleSaveAddress(formData, editId)) setIsModalOpen(false);
+        // PERBAIKAN: Hapus e.preventDefault() dan gunakan dataDariModal, bukan formData asli
+        onSubmit={async (dataDariModal) => {
+          if (await handleSaveAddress(dataDariModal, editId)) {
+            setIsModalOpen(false);
+          }
         }}
         formData={formData}
         onChange={handleInputChange}

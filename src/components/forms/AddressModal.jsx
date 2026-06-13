@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Search, MapPin } from "lucide-react";
+import { X, MapPin, LocateFixed, Search, Loader2 } from "lucide-react";
 import {
   MapContainer,
   TileLayer,
@@ -36,6 +36,8 @@ const AddressModal = ({
   const [position, setPosition] = useState([-2.689, 111.621]);
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,59 +51,88 @@ const AddressModal = ({
     }
   }, [isOpen]);
 
+  // FIX BUG PENTING: Cuma set kordinat SEKALI pas modal baru dibuka
   useEffect(() => {
-    if (isOpen && isEdit && formData.address_detail) {
-      handleSearchLocation(formData.address_detail);
-    }
-  }, [isOpen, isEdit]);
-
-  const fetchAddressName = async (lat, lng) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
-      );
-      const data = await response.json();
-      if (data.display_name) {
-        onChange({
-          target: { name: "address_detail", value: data.display_name },
-        });
+    if (isOpen) {
+      if (isEdit && formData.latitude && formData.longitude) {
+        setPosition([formData.latitude, formData.longitude]);
+      } else {
+        // Reset ke titik default kalau nambah alamat baru
+        setPosition([-2.689, 111.621]);
       }
-    } catch (error) {
-      console.error("Geocoding Error:", error);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isEdit]); // HAPUS formData dari sini biar pin ga loncat pas ngetik!
 
   const LocationPicker = () => {
     useMapEvents({
       click(e) {
         setPosition([e.latlng.lat, e.latlng.lng]);
-        fetchAddressName(e.latlng.lat, e.latlng.lng);
       },
     });
     return <Marker position={position} />;
   };
 
-  const handleSearchLocation = async (text) => {
-    if (!text || text.length < 5) return;
+  const handleCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Browser kamu nggak support fitur GPS bro.");
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPosition([latitude, longitude]);
+        setIsLocating(false);
+      },
+      (err) => {
+        console.error("Gagal dapet GPS:", err);
+        alert("Gagal ambil lokasi. Pastiin GPS nyala dan browser diijinin akses lokasi ya.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const handleSearchAddress = async (searchText) => {
+    if (!searchText || searchText.trim().length < 3) return;
+    
+    setIsSearching(true);
+    
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchText)}&countrycodes=id&limit=1`
       );
       const data = await response.json();
+      
       if (data && data.length > 0) {
         setPosition([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
-      }
+      } 
     } catch (error) {
-      console.error("Search Error:", error);
+      console.error("Geocoding error:", error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
   const RecenterMap = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
-      map.setView([lat, lng], 15);
+      map.setView([lat, lng], 18);
     }, [lat, lng]);
     return null;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payloadToBackend = {
+      ...formData,
+      latitude: position[0],
+      longitude: position[1],
+    };
+    onSubmit(payloadToBackend);
   };
 
   if (!shouldRender) return null;
@@ -140,8 +171,9 @@ const AddressModal = ({
             />
           </button>
         </div>
+        
         <form
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
           className="p-10 space-y-6 overflow-y-auto flex-grow text-left"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,52 +202,79 @@ const AddressModal = ({
             placeholder="0812xxxx"
             required
           />
+
           <div className="space-y-3">
-            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex justify-between items-center">
-              Titik Lokasi Pengiriman
-              <span className="text-[10px] lowercase font-medium text-[#2D5A43] bg-green-50 px-3 py-1 rounded-full">
-                Klik peta untuk menggeser PIN
-              </span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                Titik Lokasi Pengiriman (Geser Pin Jika Kurang Pas)
+              </label>
+              
+              <button
+                type="button"
+                onClick={handleCurrentLocation}
+                disabled={isLocating}
+                className="text-[10px] uppercase font-bold text-[#2D5A43] bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <LocateFixed size={12} />
+                {isLocating ? "Mencari GPS..." : "Gunakan Lokasi Saya"}
+              </button>
+            </div>
+            
             <div className="h-52 w-full rounded-[2rem] overflow-hidden border border-gray-100 z-0">
               <MapContainer
                 center={position}
-                zoom={13}
+                zoom={16}
                 scrollWheelZoom={false}
                 style={{ height: "100%", width: "100%" }}
               >
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://www.esri.com/">Esri</a> i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 />
                 <LocationPicker />
                 <RecenterMap lat={position[0]} lng={position[1]} />
               </MapContainer>
             </div>
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-2 relative">
             <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest block">
-              Detail Alamat (Jalan, No Rumah, RT/RW)
+              Detail Alamat (Nama Jalan, RT/RW, Kelurahan)
             </label>
             <div className="relative group">
               <FormTextarea
                 name="address_detail"
                 value={formData.address_detail ?? ""}
                 onChange={onChange}
-                onBlur={(e) => handleSearchLocation(e.target.value)}
-                placeholder="Jl. G.M. Arsyad No. 10..."
-                className="pr-14 min-h-[100px]"
+                onBlur={(e) => handleSearchAddress(e.target.value)}
+                placeholder="Contoh: Jl. Jend Sudirman No. 10, RT 01/02..."
+                className="pr-14 min-h-[80px]"
                 required
               />
               <button
                 type="button"
-                onClick={() => handleSearchLocation(formData.address_detail)}
-                className="absolute right-4 top-4 p-2 text-gray-400 hover:text-[#2D5A43] transition-colors bg-gray-50 rounded-xl"
+                onClick={() => handleSearchAddress(formData.address_detail)}
+                disabled={isSearching}
+                className="absolute right-4 top-4 p-2 text-gray-400 hover:text-[#2D5A43] transition-colors bg-gray-50 rounded-xl disabled:opacity-50 flex items-center justify-center"
               >
-                <Search size={18} />
+                {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
               </button>
             </div>
           </div>
+
+          <div className="space-y-2 relative">
+            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest block">
+              Catatan Untuk Kurir (Opsional)
+            </label>
+            <FormTextarea
+              name="courier_note"
+              value={formData.courier_note ?? ""}
+              onChange={onChange}
+              placeholder="Contoh: Rumah pagar hitam, tolong titip di pos satpam aja kalau kosong..."
+              className="min-h-[80px]"
+            />
+          </div>
+          
           <div className="flex gap-4 pt-6 sticky bottom-0 bg-white border-t border-gray-50">
             <button
               type="button"
