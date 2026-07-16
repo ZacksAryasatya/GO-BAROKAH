@@ -5,9 +5,11 @@ import { useLoginLogic } from '../../hooks/auth/useLoginLogic';
 import InputField from '../../components/common/FormInput';
 import Button from '../../components/common/Button'; 
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 const LoginPage = () => {
-  const { formData, handleChange, handleLogin, isLoading, error } = useLoginLogic();
+  const { formData, handleChange, handleLogin, isLoading, error, handleGoogleSuccess } = useLoginLogic();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -85,6 +87,24 @@ const LoginPage = () => {
             />
           </div>
         </form>
+
+        <div className="mt-8 relative flex items-center justify-center">
+          <div className="absolute inset-x-0 h-px bg-gray-200"></div>
+          <span className="relative bg-white px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Atau masuk dengan</span>
+        </div>
+
+        <div className="mt-6 flex justify-center hover:-translate-y-0.5 transition-transform duration-200">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => toast.error('Login Google dibatalkan atau gagal.')}
+            theme="outline"
+            size="large"
+            text="signin_with"
+            shape="pill"
+            width="340"
+          />
+        </div>
+
         <div className="mt-8 text-center"> 
           <p className="text-sm text-gray-400 font-medium">
             Belum punya akun?{' '}

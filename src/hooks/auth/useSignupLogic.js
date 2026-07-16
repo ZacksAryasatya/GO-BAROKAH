@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth/authService';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 export const useSignupLogic = () => {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
@@ -36,5 +37,34 @@ export const useSignupLogic = () => {
     }
   };
 
-  return { formData, isLoading, showPassword, handleChange, handleSignUp, togglePassword };
+  const { login: setGlobalUser } = useAuth();
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsLoading(true);
+    try {
+      const result = await authService.loginWithGoogle(credentialResponse.credential);
+      const user = result?.data?.account; 
+      const token = result?.data?.token;
+
+      if (token && user) { 
+        localStorage.setItem('token', token);
+        setGlobalUser(user);
+        toast.success(`Selamat Datang, ${user.username || 'di UD Barokah'}!`, {
+          style: { borderRadius: '16px', background: '#2D5A43', color: '#fff', fontWeight: 'bold' },
+        });
+
+        setTimeout(() => { 
+          if (user.role === 'owner') navigate('/owner/dashboard', { replace: true });
+          else if (user.role === 'admin') navigate('/admin/dashboard', { replace: true });
+          else navigate('/', { replace: true });
+        }, 1000);
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || "Login/Daftar Google gagal.";
+      toast.error(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { formData, isLoading, showPassword, handleChange, handleSignUp, togglePassword, handleGoogleSuccess };
 };
