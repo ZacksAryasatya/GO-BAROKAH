@@ -1,4 +1,3 @@
-// components/common/Modal.jsx
 const Modal = ({ open, onClose, children }) => {
   if (!open) return null;
 

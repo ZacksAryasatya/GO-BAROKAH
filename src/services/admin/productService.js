@@ -5,8 +5,18 @@ export const getAllProducts = async () => {
   return res.data;
 };
 
+export const updateCategory = async (id, data) => {
+  const res = await api.patch(`/api/products/category/${id}`, data);
+  return res.data;
+};
+
 export const getAllCategories = async () => {
   const res = await api.get("/api/products/category");
+  return res.data;
+};
+
+export const updateType = async (id, data) => {
+  const res = await api.patch(`/api/products/type/${id}`, data);
   return res.data;
 };
 

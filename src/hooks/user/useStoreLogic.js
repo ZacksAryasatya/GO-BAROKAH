@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom"; // <-- Tambah ini untuk ngebaca URL
+import { useSearchParams } from "react-router-dom"; 
 import { productService } from "../../services/user/productService";
 import { API_URL } from "../../utils/api";
  

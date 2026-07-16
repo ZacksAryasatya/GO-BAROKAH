@@ -14,6 +14,8 @@ const HistoryPage = () => {
     formatCurrency,
     handleStartShopping,
     handleCancel,
+    handleResumePayment,
+    handleReorder
   } = useHistoryLogic();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,15 +39,16 @@ const HistoryPage = () => {
 
   const getStatusStyle = (status) => {
     switch (status.toLowerCase()) {
-      case "completed":
+      case "selesai":
         return "bg-[#E8F5EE] text-[#2D5A43]";
-      case "processing":
+      case "disiapkan":
         return "bg-blue-50 text-blue-600";
-      case "pending":
+      case "menunggu":
         return "bg-amber-50 text-amber-600";
-      case "cancelled":
+      case "dibatalkan":
         return "bg-red-50 text-red-500";
-      case "shipping":
+      case "dikirim":
+      case "siap diambil":
         return "bg-orange-50 text-orange-500";
       default:
         return "bg-gray-50 text-gray-400";
@@ -85,7 +88,7 @@ const HistoryPage = () => {
 
       <div className="space-y-4">
         {orders.length > 0 ? (
-          orders.map(({ id, dbId, created_at, status, items, total_amount }) => (
+          orders.map(({ id, dbId, created_at, status, items, total_amount, paymentStatus, paymentUrl, isPickup }) => (
             <div
               key={id}
               className="border border-gray-100 rounded-[20px] overflow-hidden hover:border-gray-200 hover:shadow-lg hover:shadow-black/[0.03] transition-all duration-300"
@@ -108,11 +111,24 @@ const HistoryPage = () => {
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`text-[10px] px-3 py-1.5 rounded-xl font-black uppercase tracking-wider w-fit ${getStatusStyle(status)}`}
-                >
-                  {status}
-                </span>
+                
+                {/* --- BAGIAN STATUS DIJEJERIN DI SINI --- */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {paymentStatus === "UNPAID" && (
+                    <span className={`text-[10px] px-3 py-1.5 rounded-xl font-black uppercase tracking-wider w-fit ${
+                      isPickup ? "bg-amber-50 text-amber-600" : "bg-red-50 text-red-500"
+                    }`}>
+                      {isPickup ? "Bayar di Toko" : "Belum Dibayar"}
+                    </span>
+                  )}
+                  <span
+                    className={`text-[10px] px-3 py-1.5 rounded-xl font-black uppercase tracking-wider w-fit ${getStatusStyle(status)}`}
+                  >
+                    {status}
+                  </span>
+                </div>
+                {/* --------------------------------------- */}
+
               </div>
               <div className="px-5 py-4 space-y-3">
                 {items.map((item, idx) => (
@@ -141,8 +157,19 @@ const HistoryPage = () => {
                     {formatCurrency(total_amount)}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  {status.toUpperCase() === "PENDING" && (
+                
+                <div className="flex flex-wrap gap-2">
+                  {status.toUpperCase() === "MENUNGGU" && paymentStatus === "UNPAID" && paymentUrl && (
+                    <Button
+                      variant="primary"
+                      className="px-5 py-2.5 text-[11px] bg-amber-500 border-none hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 w-full sm:w-auto"
+                      onClick={() => handleResumePayment(paymentUrl)}
+                    >
+                      Lanjutkan Pembayaran
+                    </Button>
+                  )}
+                  
+                  {status.toUpperCase() === "MENUNGGU" && (
                     <Button
                       variant="outline"
                       className="px-5 py-2.5 text-[11px] text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
@@ -161,7 +188,7 @@ const HistoryPage = () => {
                   <Button
                     variant="primary"
                     className="flex-1 sm:flex-none px-5 py-2.5 text-[11px]"
-                    onClick={() => console.log("Beli lagi")}
+                    onClick={() => handleReorder(items)}
                   >
                     Beli Lagi
                   </Button>

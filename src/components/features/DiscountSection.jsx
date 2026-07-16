@@ -22,8 +22,10 @@ const ProductCard = ({ prod }) => (
     <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-2 leading-tight group-hover:text-[#2D5A43] transition-colors mb-1">
       {prod.name}
     </h3>
-    <p className="text-xs font-black text-red-500">{formatIDR(prod.final_price)}</p>
-    <p className="text-[10px] font-bold text-gray-300 line-through">{formatIDR(prod.price)}</p>
+    <div className="flex flex-col mt-1">
+      <p className="text-[10px] font-bold text-red-500 line-through mb-0.5">{formatIDR(prod.price)}</p>
+      <p className="text-xs font-black text-[#3A5A4D]">{formatIDR(prod.final_price)}</p>
+    </div>
   </Link>
 );
 
@@ -54,7 +56,6 @@ const DiscountSection = ({ filteredProducts }) => {
 
   const scroll = (dir) => scrollRef.current?.scrollBy({ left: dir * 350, behavior: "smooth" });
 
-  // Kalau gak ada produk diskon di kategori ini, otomatis hilang
   if (products.length === 0) return null;
 
   const useGrid = products.length <= 4;

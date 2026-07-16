@@ -6,12 +6,11 @@ export const usePaymentLogic = () => {
   const [loading, setLoading] = useState(false);
   const { loadCart } = useCart(); 
 
-  const processOrder = async (orderData, navigate) => {
+  const processOrder = async (orderData, isPickup, navigate) => {
     try {
       setLoading(true);
       
       let response;
-      const isPickup = orderData.addressId === 0 || orderData.addressId === "0";
 
       if (isPickup) {
         const payloadPickup = {
@@ -21,11 +20,34 @@ export const usePaymentLogic = () => {
       } else {
         const payloadDelivery = {
           notes: orderData.notes,
-          address_id: Number(orderData.addressId)
+          address_id: Number(orderData.address_id) 
         };
         response = await orderService.createDeliveryOrder(payloadDelivery);
       }
+      
       await loadCart();
+
+      const orderId = response?.data?.id || response?.data?.data?.id || response?.id;
+
+      if (orderId) {
+        if (isPickup) {
+          navigate('/order-success', {
+            replace: true,
+            state: { order: response?.data?.data || response?.data || response }
+          });
+          return;
+        }
+
+        const paymentRes = await orderService.payOrder(orderId);
+        
+        const paymentUrl = paymentRes?.data?.payment_url || paymentRes?.payment_url;
+
+        if (paymentUrl) {
+          window.location.href = paymentUrl;
+          return;
+        }
+      }
+
       navigate('/order-success', {
         replace: true,
         state: { order: response?.data || response }

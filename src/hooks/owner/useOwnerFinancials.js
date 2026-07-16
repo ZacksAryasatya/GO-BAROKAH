@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 
-// MOCK DATA: Sekarang murni berfokus pada PENDAPATAN dari penjualan, bukan data gaib.
 const MOCK_OMZET_BULANAN = [
   { name: 'Jan', omzet: 40000000 },
   { name: 'Feb', omzet: 45000000 },
@@ -24,12 +23,10 @@ export const useOwnerFinancials = () => {
   const [omzetTahunanData] = useState(MOCK_OMZET_TAHUNAN);
   const [riwayatUangMasuk] = useState(MOCK_UANG_MASUK);
 
-  // Kalkulasi total omzet dari data bulanan
   const totalOmzetAktual = useMemo(() => {
     return omzetBulananData.reduce((sum, item) => sum + item.omzet, 0);
   }, [omzetBulananData]);
 
-  // Kalkulasi uang masuk harian (untuk kas)
   const totalKasHariIni = useMemo(() => {
     return riwayatUangMasuk
       .filter(item => item.waktu.includes("Hari ini"))

@@ -79,7 +79,7 @@ const Sidebar = ({ profileName, profileAvatar, onProfileClick }) => {
             to="/owner/riwayat" 
             className={({ isActive }) => isActive ? activeMenuClass : baseMenuClass}
           >
-            <History className="h-4 w-4" /> Riwayat Transaksi
+            <History className="h-4 w-4" /> Riwayat Order
           </NavLink>
           
           <NavLink 

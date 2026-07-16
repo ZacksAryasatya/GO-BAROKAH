@@ -4,7 +4,7 @@ import { usePaymentLogic } from "../../hooks/user/usePaymentLogic";
 import { useAuth } from "../../context/AuthContext";
 import { 
   Truck, Store, ChevronLeft, ArrowRight, Info, FileText, 
-  Landmark, Loader2, CreditCard, Banknote, BookOpenCheck 
+  Loader2, Package 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { addressService } from "../../services/user/addressService"; 
@@ -14,10 +14,13 @@ import CustomAddressSelector from "../../components/forms/CustomAddressSelector"
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  
   const {
     cartItems, subtotal, shippingFee, total,
     isPickup, setIsPickup,
     alamatDetail, setAlamatDetail,
+    hitungOngkir,
+    isLoadingShipping
   } = useCheckoutLogic();
 
   const { processOrder, loading } = usePaymentLogic();
@@ -25,16 +28,6 @@ const CheckoutPage = () => {
   const [userAddresses, setUserAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState(""); 
-
-  const paymentOptions = [
-    { id: 'cod', name: 'Bayar di Tempat (COD)', desc: 'Bayar saat barang sampai', icon: <Banknote size={18} />, public: true },
-    { id: 'va', name: 'Virtual Account / Transfer', desc: 'Transfer ke rekening tujuan', icon: <Landmark size={18} />, public: true },
-    { id: 'cc', name: 'Kartu Kredit / Debit', desc: 'Verifikasi otomatis via sistem', icon: <CreditCard size={18} />, public: true },
-    { id: 'debt', name: 'Hutang / Nota Buku', desc: 'Dicatat sebagai piutang toko', icon: <BookOpenCheck size={18} />, public: false },
-  ];
-
-  const availablePayments = paymentOptions.filter(opt => opt.public || user?.canDebt);
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
@@ -48,9 +41,7 @@ const CheckoutPage = () => {
         if (addressList.length > 0) {
           const firstAddressId = addressList[0].id?.toString() || "";
           setSelectedAddressId(firstAddressId);
-
-          const initialAddress = addressList[0];
-          setAlamatDetail(initialAddress.addressDetail || "");
+          setAlamatDetail(addressList[0].addressDetail || "");
         }
       } catch (error) {
         console.error("Gagal load alamat asli user:", error);
@@ -62,61 +53,60 @@ const CheckoutPage = () => {
     }
   }, [isPickup, setAlamatDetail]); 
 
-  const isFormValid = (isPickup || selectedAddressId) && selectedMethod;
+  useEffect(() => {
+    if (!isPickup && selectedAddressId) {
+      hitungOngkir(selectedAddressId);
+    }
+  }, [selectedAddressId, isPickup, hitungOngkir]);
+
+  const isFormValid = isPickup || selectedAddressId;
 
   const handleConfirmOrder = () => {
-    const methodInfo = paymentOptions.find(p => p.id === selectedMethod);
-    
-    const orderData = {
-      addressId: isPickup ? 0 : Number(selectedAddressId),
-      notes: orderNotes.trim() !== "" ? orderNotes : undefined, 
-      paymentMethod: selectedMethod,
-      paymentName: methodInfo?.name
-    };
+    const orderData = {};
 
-    processOrder(orderData, navigate);
+    if (orderNotes.trim() !== "") {
+      orderData.notes = orderNotes;
+    }
+
+    if (!isPickup) {
+      orderData.address_id = Number(selectedAddressId);
+    }
+
+    processOrder(orderData, isPickup, navigate);
   };
 
   const displayTotal = isPickup ? subtotal : selectedAddressId ? total : subtotal;
 
-  const renderPaymentMethods = () => (
-    <div className="space-y-3">
-      {availablePayments.map((pay) => {
-        const isSelected = selectedMethod === pay.id;
-        return (
-          <button
-            key={pay.id}
-            onClick={() => setSelectedMethod(pay.id)}
-            className={`w-full flex items-center gap-3.5 p-3.5 rounded-2xl border-2 transition-all text-left group
-              ${isSelected
-                ? 'border-[#2D5A43] bg-[#2D5A43]/5 shadow-sm'
-                : 'border-gray-100 bg-white hover:border-gray-200'
-              }`}
-          >
-            <div className={`p-2.5 rounded-xl flex-shrink-0 transition-colors
-              ${isSelected ? 'bg-[#2D5A43] text-white' : 'bg-gray-50 text-gray-400 group-hover:text-gray-600'}`}>
-              {pay.icon}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className={`font-black text-xs tracking-tight leading-tight truncate
-                ${isSelected ? 'text-[#2D5A43]' : 'text-gray-900'}`}>
-                {pay.name}
-              </span>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
-                {pay.desc}
-              </span>
-            </div>
-            <div className={`ml-auto flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all
-              ${isSelected ? 'border-[#2D5A43] bg-[#2D5A43]' : 'border-gray-200'}`}>
-              {isSelected && (
-                <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                  <polyline points="2,6 5,9 10,3" />
-                </svg>
-              )}
-            </div>
-          </button>
-        );
-      })}
+  const formatItemPrice = (price) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price || 0);
+  };
+
+  const renderOrderItems = () => (
+    <div className="space-y-4 max-h-[320px] overflow-y-auto custom-scrollbar pr-2">
+      {cartItems?.map((item, index) => (
+        <div key={index} className="flex gap-3 items-center pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+          <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+            {item.image || item.productImageUrl || item.image_url ? (
+              <img src={item.image || item.productImageUrl || item.image_url} alt={item.name || item.productName} className="w-full h-full object-cover" />
+            ) : (
+              <Package size={20} className="text-gray-300" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[11px] font-black text-gray-900 truncate">{item.name || item.productName}</h4>
+            <p className="text-[9px] font-bold text-gray-400 mt-0.5">
+              {item.qty || item.quantity} x {formatItemPrice(item.price || item.unitPrice)}
+            </p>
+          </div>
+          <div className="text-[11px] font-black text-[#2D5A43] shrink-0">
+            {formatItemPrice((item.qty || item.quantity) * (item.price || item.unitPrice))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -198,11 +188,12 @@ const CheckoutPage = () => {
                 />
               </div>
             </div>
+            
             <div className="lg:hidden bg-white p-5 sm:p-6 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/30 space-y-4">
               <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest border-b border-gray-50 pb-4 mb-2">
-                Metode <span className="text-[#2D5A43]">Pembayaran</span>
+                Daftar <span className="text-[#2D5A43]">Produk</span>
               </h3>
-              {renderPaymentMethods()}
+              {renderOrderItems()}
             </div>
 
           </div>
@@ -210,10 +201,10 @@ const CheckoutPage = () => {
           <aside className="hidden lg:block lg:col-span-2">
             <div className="bg-white rounded-[2rem] p-6 lg:p-8 sticky top-8 border border-gray-100 shadow-xl shadow-gray-200/40">
               <h3 className="text-sm font-black mb-4 text-gray-900 uppercase tracking-widest">
-                Metode <span className="text-[#2D5A43]">Pembayaran</span>
+                Daftar <span className="text-[#2D5A43]">Produk</span>
               </h3>
               <div className="mb-8">
-                {renderPaymentMethods()}
+                {renderOrderItems()}
               </div>
               <h3 className="text-sm font-black mb-5 text-gray-900 uppercase tracking-widest pt-6 border-t border-gray-100">
                 Ringkasan <span className="text-[#2D5A43]">Order</span>
@@ -223,22 +214,24 @@ const CheckoutPage = () => {
                   <span>Subtotal</span>
                   <span className="text-gray-800">{subtotal}</span>
                 </div>
-                <div className="flex justify-between text-gray-400">
+                <div className="flex justify-between items-center text-gray-400">
                   <span>Ongkir</span>
-                  <span className="text-[#2D5A43]">
+                  <span className="text-[#2D5A43] flex items-center gap-1.5">
+                    {isLoadingShipping && <Loader2 size={12} className="animate-spin" />}
                     {isPickup ? "Gratis" : selectedAddressId ? shippingFee : "—"}
                   </span>
                 </div>
                 <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-xl text-[#2D5A43] tracking-tighter font-black leading-none">
+                  <span className="text-xl text-[#2D5A43] tracking-tighter font-black leading-none flex items-center gap-2">
+                    {isLoadingShipping && <Loader2 size={16} className="animate-spin text-gray-300" />}
                     {displayTotal}
                   </span>
                 </div>
               </div>
 
               <button
-                disabled={!isFormValid || loading}
+                disabled={!isFormValid || loading || isLoadingShipping}
                 onClick={handleConfirmOrder}
                 className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-[#2D5A43] text-white flex items-center justify-center gap-2 hover:bg-[#234735] shadow-lg shadow-emerald-900/10 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all active:scale-95 group"
               >
@@ -262,9 +255,10 @@ const CheckoutPage = () => {
               Subtotal <span className="text-gray-700">{subtotal}</span>
             </span>
             <span className="text-gray-200">·</span>
-            <span>
+            <span className="flex items-center gap-1">
               Ongkir{" "}
-              <span className="text-[#2D5A43]">
+              <span className="text-[#2D5A43] flex items-center gap-1">
+                {isLoadingShipping && <Loader2 size={10} className="animate-spin" />}
                 {isPickup ? "Gratis" : selectedAddressId ? shippingFee : "—"}
               </span>
             </span>
@@ -273,12 +267,13 @@ const CheckoutPage = () => {
           <div className="flex items-center gap-3">
             <div className="flex flex-col min-w-0">
               <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">Total</span>
-              <span className="text-base font-black text-[#2D5A43] tracking-tighter leading-tight truncate">
+              <span className="text-base font-black text-[#2D5A43] tracking-tighter leading-tight truncate flex items-center gap-1.5">
+                {isLoadingShipping && <Loader2 size={12} className="animate-spin text-gray-300" />}
                 {displayTotal}
               </span>
             </div>
             <button
-              disabled={!isFormValid || loading}
+              disabled={!isFormValid || loading || isLoadingShipping}
               onClick={handleConfirmOrder}
               className="flex-1 bg-[#2D5A43] text-white h-12 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:bg-gray-100 disabled:text-gray-400 shadow-lg shadow-emerald-900/10"
             >

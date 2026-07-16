@@ -1,4 +1,3 @@
-// src/constants/orderStatus.js
 import { CheckCircle2, Clock, Truck, XCircle, Package } from 'lucide-react';
 
 export const ORDER_STATUS_CONFIG = {

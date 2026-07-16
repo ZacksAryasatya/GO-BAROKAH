@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { X, ImageIcon, Plus, Check, RotateCcw, Tag } from "lucide-react";
+import { X, ImageIcon, Plus, Check, RotateCcw, Tag, Edit2 } from "lucide-react";
 import Button from "../../common/Button";
-import ConfirmModal from "../../forms/ConfirmModal";
- 
+
 const INITIAL_FORM = {
   name: "",
   description: "",
@@ -11,23 +10,25 @@ const INITIAL_FORM = {
   image: null,
   stock: 0,
   price: 0,
+  cost: 0,
   discount_amount: 0,
 };
- 
+
 const ProductModal = ({
   mode, initial = null, onClose, onSubmit,
   categories = [], types = [],
-  onAddCategory, onAddType, onDeleteCategory, onDeleteType,
+  onAddCategory, onAddType, 
+  onEditCategory, onEditType,
 }) => {
   const [form, setForm] = useState(INITIAL_FORM);
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [newCatMode, setNewCatMode] = useState(false);
-  const [newTypeMode, setNewTypeMode] = useState(false);
+  
+  const [catAction, setCatAction] = useState(null);
+  const [typeAction, setTypeAction] = useState(null);
   const [tempValue, setTempValue] = useState("");
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, id: null });
- 
+
   useEffect(() => {
     if (mode) {
       setShouldRender(true);
@@ -39,7 +40,7 @@ const ProductModal = ({
       return () => clearTimeout(timer);
     }
   }, [mode]);
- 
+
   useEffect(() => {
     if (mode === "edit" && initial) {
       setForm({
@@ -47,42 +48,51 @@ const ProductModal = ({
         category_id: initial.category?.id || initial.category_id || "",
         type_id: initial.type?.id || initial.type_id || "",
         discount_amount: initial.discount_amount || 0,
+        cost: initial.cost || 0,
       });
     } else {
       setForm(INITIAL_FORM);
     }
   }, [mode, initial]);
- 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ["stock", "price", "discount_amount", "category_id", "type_id"];
+    const numericFields = ["stock", "price", "cost", "discount_amount", "category_id", "type_id"];
     setForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name) ? (value === "" ? 0 : Number(value)) : value,
     }));
   };
- 
-  const handleQuickAdd = async (target) => {
+
+  const handleQuickAction = async (target, action) => {
     if (!tempValue) return;
     setIsSaving(true);
     try {
       if (target === "category") {
-        const res = await onAddCategory({ name: tempValue });
-        setForm((prev) => ({ ...prev, category_id: res.id || res.data?.id }));
-        setNewCatMode(false);
+        if (action === "add") {
+          const res = await onAddCategory({ name: tempValue });
+          setForm((prev) => ({ ...prev, category_id: res.id || res.data?.id }));
+        } else if (action === "edit") {
+          await onEditCategory(form.category_id, { name: tempValue });
+        }
+        setCatAction(null);
       } else {
-        const res = await onAddType({ name: tempValue });
-        setForm((prev) => ({ ...prev, type_id: res.id || res.data?.id }));
-        setNewTypeMode(false);
+        if (action === "add") {
+          const res = await onAddType({ name: tempValue });
+          setForm((prev) => ({ ...prev, type_id: res.id || res.data?.id }));
+        } else if (action === "edit") {
+          await onEditType(form.type_id, { name: tempValue });
+        }
+        setTypeAction(null);
       }
       setTempValue("");
     } catch (err) {
-      console.error("Quick Add Error:", err);
+      console.error("Quick Action Error:", err);
     } finally {
       setIsSaving(false);
     }
   };
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -96,19 +106,13 @@ const ProductModal = ({
       setIsSaving(false);
     }
   };
- 
+
   if (!shouldRender) return null;
- 
+
   const inputClass = "w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium";
   const labelClass = "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block px-1";
   const quickBtnClass = "p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-all flex items-center justify-center border border-emerald-100";
- 
-  const fields = [
-    { label: "Nama Produk", name: "name", type: "text", placeholder: "Contoh: Kurma Ajwa", colSpan: true },
-    { label: "Stok Barang", name: "stock", type: "number" },
-    { label: "Harga Jual (Rp)", name: "price", type: "number" },
-  ];
- 
+
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -116,7 +120,7 @@ const ProductModal = ({
           className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${animate ? "opacity-100" : "opacity-0"}`}
           onClick={isSaving ? null : onClose}
         />
- 
+
         <form
           onSubmit={handleSubmit}
           className={`relative bg-white w-full max-w-xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300 transform ${animate ? "scale-100 translate-y-0 opacity-100" : "scale-95 translate-y-10 opacity-0"}`}
@@ -134,24 +138,33 @@ const ProductModal = ({
               <X size={20} />
             </button>
           </div>
+          
           <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 custom-scrollbar">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              
               <div className={`md:col-span-2 transition-all duration-500 delay-[150ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Nama Produk</label>
                 <input required name="name" type="text" value={form.name} onChange={handleChange} className={inputClass} placeholder="Contoh: Kurma Ajwa" />
               </div>
+              
               <div className={`md:col-span-2 transition-all duration-500 delay-[200ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Deskripsi Singkat</label>
                 <textarea required name="description" rows={2} value={form.description} onChange={handleChange} className={`${inputClass} resize-none`} placeholder="Detail produk..." />
               </div>
+              
+              {/* KOLOM KATEGORI */}
               <div className={`transition-all duration-500 delay-[250ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Kategori</label>
                 <div className="flex gap-2">
-                  {newCatMode ? (
+                  {catAction ? (
                     <>
-                      <input autoFocus className={inputClass} placeholder="Kategori Baru" value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-                      <button type="button" onClick={() => handleQuickAdd("category")} className={quickBtnClass}><Check size={18} /></button>
-                      <button type="button" onClick={() => setNewCatMode(false)} className="p-3 bg-slate-100 text-slate-400 rounded-xl"><RotateCcw size={18} /></button>
+                      <input autoFocus className={inputClass} placeholder={catAction === "add" ? "Kategori Baru" : "Edit Kategori"} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
+                      <button type="button" onClick={() => handleQuickAction("category", catAction)} className={quickBtnClass}>
+                        <Check size={18} />
+                      </button>
+                      <button type="button" onClick={() => { setCatAction(null); setTempValue(""); }} className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-colors">
+                        <RotateCcw size={18} />
+                      </button>
                     </>
                   ) : (
                     <>
@@ -159,19 +172,37 @@ const ProductModal = ({
                         <option value="">Pilih Kategori</option>
                         {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
-                      <button type="button" onClick={() => setNewCatMode(true)} className={quickBtnClass}><Plus size={18} /></button>
+                      {form.category_id ? (
+                        <button type="button" onClick={() => {
+                          setCatAction("edit");
+                          const cat = categories.find((c) => String(c.id) === String(form.category_id));
+                          setTempValue(cat?.name || "");
+                        }} className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 border border-amber-100 transition-colors">
+                          <Edit2 size={18} />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => { setCatAction("add"); setTempValue(""); }} className={quickBtnClass}>
+                          <Plus size={18} />
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
               </div>
+              
+              {/* KOLOM SATUAN */}
               <div className={`transition-all duration-500 delay-[300ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Satuan</label>
                 <div className="flex gap-2">
-                  {newTypeMode ? (
+                  {typeAction ? (
                     <>
-                      <input autoFocus className={inputClass} placeholder="Pcs/Box" value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-                      <button type="button" onClick={() => handleQuickAdd("type")} className={quickBtnClass}><Check size={18} /></button>
-                      <button type="button" onClick={() => setNewTypeMode(false)} className="p-3 bg-slate-100 text-slate-400 rounded-xl"><RotateCcw size={18} /></button>
+                      <input autoFocus className={inputClass} placeholder={typeAction === "add" ? "Satuan Baru" : "Edit Satuan"} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
+                      <button type="button" onClick={() => handleQuickAction("type", typeAction)} className={quickBtnClass}>
+                        <Check size={18} />
+                      </button>
+                      <button type="button" onClick={() => { setTypeAction(null); setTempValue(""); }} className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-colors">
+                        <RotateCcw size={18} />
+                      </button>
                     </>
                   ) : (
                     <>
@@ -179,11 +210,24 @@ const ProductModal = ({
                         <option value="">Pilih Satuan</option>
                         {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                       </select>
-                      <button type="button" onClick={() => setNewTypeMode(true)} className={quickBtnClass}><Plus size={18} /></button>
+                      {form.type_id ? (
+                        <button type="button" onClick={() => {
+                          setTypeAction("edit");
+                          const typ = types.find((t) => String(t.id) === String(form.type_id));
+                          setTempValue(typ?.name || "");
+                        }} className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 border border-amber-100 transition-colors">
+                          <Edit2 size={18} />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => { setTypeAction("add"); setTempValue(""); }} className={quickBtnClass}>
+                          <Plus size={18} />
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
               </div>
+              
               <div className={`md:col-span-2 transition-all duration-500 delay-[350ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Upload Gambar Produk</label>
                 <div className="relative group">
@@ -209,14 +253,22 @@ const ProductModal = ({
                   </div>
                 </div>
               </div>
+              
               <div className={`transition-all duration-500 delay-[400ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Stok Barang</label>
                 <input required name="stock" type="number" value={form.stock} onChange={handleChange} className={inputClass} />
               </div>
+              
+              <div className={`transition-all duration-500 delay-[425ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+                <label className={labelClass}>Harga Pokok / Modal (Rp)</label>
+                <input required name="cost" type="number" value={form.cost} onChange={handleChange} className={inputClass} />
+              </div>
+              
               <div className={`transition-all duration-500 delay-[450ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Harga Jual (Rp)</label>
                 <input required name="price" type="number" value={form.price} onChange={handleChange} className={inputClass} />
               </div>
+              
               <div className={`md:col-span-2 transition-all duration-500 delay-[500ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Potongan Harga / Diskon (Rp)</label>
                 <div className="relative">
@@ -224,8 +276,10 @@ const ProductModal = ({
                   <input name="discount_amount" type="number" value={form.discount_amount} onChange={handleChange} className={`${inputClass} pl-11`} placeholder="0" />
                 </div>
               </div>
+              
             </div>
           </div>
+          
           <div className={`px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex gap-4 transition-all duration-500 delay-[550ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
             <button type="button" onClick={onClose} className="flex-1 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
               Batal
@@ -235,30 +289,9 @@ const ProductModal = ({
             </Button>
           </div>
         </form>
- 
-        <ConfirmModal
-          isOpen={confirmModal.isOpen}
-          onClose={() => setConfirmModal({ isOpen: false, type: null, id: null })}
-          onConfirm={async () => {
-            if (confirmModal.type === "category") {
-              await onDeleteCategory(confirmModal.id);
-              setForm((prev) => ({ ...prev, category_id: "" }));
-            } else {
-              await onDeleteType(confirmModal.id);
-              setForm((prev) => ({ ...prev, type_id: "" }));
-            }
-            setConfirmModal({ isOpen: false, type: null, id: null });
-          }}
-          title={confirmModal.type === "category" ? "Hapus Kategori?" : "Hapus Satuan?"}
-          message={confirmModal.type === "category"
-            ? "Kategori ini akan dihapus permanen. Produk yang memakai kategori ini mungkin terpengaruh."
-            : "Satuan ini akan dihapus permanen. Produk yang memakai satuan ini mungkin terpengaruh."}
-          confirmText="Ya, Hapus"
-        />
       </div>
     </>
   );
 };
- 
+
 export default ProductModal;
- 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, CreditCard, Calendar, ShoppingCart, FileText } from 'lucide-react';
+import { X, Package, Calendar, ShoppingCart, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import Button from '../common/Button';
 
 const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
@@ -42,23 +42,41 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
           </button>
         </div>
         <div className="p-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {[
-              { icon: <Calendar size={12} />, label: "Tanggal", value: new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), delay: "delay-[150ms]" },
-              { icon: <CreditCard size={12} />, label: "Pembayaran", value: order.payment_method || "Transfer Bank", delay: "delay-[200ms]" },
-            ].map(({ icon, label, value, delay }) => (
-              <div key={label} className={`p-3 rounded-xl bg-gray-50 border border-gray-100 transition-all duration-500 ${delay} ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                <div className="flex items-center gap-2 text-gray-400 mb-1">
-                  {icon}
-                  <span className="text-[9px] font-bold uppercase tracking-wider">{label}</span>
-                </div>
-                <p className="text-xs font-bold text-gray-900">{value}</p>
+          
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {/* Tanggal */}
+            <div className={`p-3 rounded-xl bg-gray-50 border border-gray-100 transition-all duration-500 delay-[150ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              <div className="flex items-center gap-2 text-gray-400 mb-1">
+                <Calendar size={12} />
+                <span className="text-[9px] font-bold uppercase tracking-wider">Tanggal</span>
               </div>
-            ))}
+              <p className="text-xs font-bold text-gray-900">
+                {new Date(order.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+
+            {/* Status Pembayaran (Menggantikan Metode) */}
+            <div className={`p-3 rounded-xl border transition-all duration-500 delay-[200ms] ${
+                order.paymentStatus === 'PAID' ? 'bg-[#E8F5EE] border-emerald-100' : order.isPickup ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100'
+              } ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              <div className="flex items-center gap-1.5 mb-1">
+                {order.paymentStatus === 'PAID' ? (
+                  <CheckCircle2 size={12} className="text-[#2D5A43]" />
+                ) : (
+                  <AlertCircle size={12} className={order.isPickup ? "text-amber-500" : "text-red-500"} />
+                )}
+                <span className={`text-[9px] font-bold uppercase tracking-wider ${order.paymentStatus === 'PAID' ? 'text-[#2D5A43]/70' : order.isPickup ? 'text-amber-600/70' : 'text-red-500/70'}`}>
+                  Pembayaran
+                </span>
+              </div>
+              <p className={`text-xs font-black truncate ${order.paymentStatus === 'PAID' ? 'text-[#2D5A43]' : order.isPickup ? 'text-amber-600' : 'text-red-600'}`}>
+                {order.paymentStatus === 'PAID' ? 'Lunas' : order.isPickup ? 'Bayar di Toko' : 'Belum Dibayar'}
+              </p>
+            </div>
           </div>
 
           {order.notes && (
-            <div className={`mb-6 p-4 rounded-xl bg-amber-50/50 border border-amber-100 transition-all duration-500 delay-[225ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+            <div className={`mb-6 p-4 rounded-xl bg-amber-50/50 border border-amber-100 transition-all duration-500 delay-[250ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
               <div className="flex items-center gap-1.5 text-amber-600 mb-1.5">
                 <FileText size={12} />
                 <span className="text-[9px] font-black uppercase tracking-widest">Catatan Pesanan</span>
@@ -68,7 +86,8 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
               </p>
             </div>
           )}
-          <div className={`transition-all duration-500 delay-[250ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+
+          <div className={`transition-all duration-500 delay-[275ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
             <div className="flex items-center gap-2 text-gray-400 mb-3 px-1">
               <Package size={12} />
               <span className="text-[9px] font-bold uppercase tracking-wider">Item Produk</span>
@@ -89,12 +108,19 @@ const OrderDetailModal = ({ order, isOpen, onClose, formatCurrency }) => {
               ))}
             </div>
           </div>
+
+          {/* Bagian Totalan dan Ongkir */}
           <div className={`mt-6 pt-4 border-t border-dashed border-gray-200 transition-all duration-500 delay-[400ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ongkos Kirim</span>
+              <span className="text-sm font-bold text-gray-600">{formatCurrency(order.shipping_fee || 0)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Bayar</span>
               <span className="text-xl font-black text-[#3A5A4D]">{formatCurrency(order.total_amount)}</span>
             </div>
           </div>
+
         </div>
         <div className={`px-6 py-5 bg-gray-50 border-t border-gray-100 transition-all duration-500 delay-[450ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <Button variant="primary" className="w-full py-3 text-[11px]" onClick={onClose}>Tutup</Button>

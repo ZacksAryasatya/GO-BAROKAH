@@ -19,6 +19,18 @@ const orderService = {
     const response = await api.patch(`/api/orders/${orderId}/cancel`);
     return response.data;
   },
+
+  payOrder: async (orderId) => {
+    const response = await api.post(`/api/orders/${orderId}/pay`);
+    return response.data;
+  },
+
+  calculateShippingFee: async (addressId) => {
+    const response = await api.get('/api/orders/shipping-fee', {
+      params: { address_id: addressId }
+    });
+    return response.data;
+  }
 };
 
 export default orderService;

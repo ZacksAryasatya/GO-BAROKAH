@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,7 +22,6 @@ import InventoryStatCard from "../../components/admin/inventory/InventoryStatCar
 import OrderDetailModal from "../../components/admin/order/OrderDetailModal";
 import ConfirmModal from "../../components/forms/ConfirmModal";
 import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
-import { formatRupiah } from "../../utils/formatters";
 
 const PER_PAGE = 10;
 const TABS = [
@@ -74,8 +74,9 @@ const STATUS_CONFIG = {
 };
 
 const AdminOrders = () => {
+  const location = useLocation();
   const { orders, isLoading, handleUpdateStatus } = useAdminOrders();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(location.state?.searchId || "");
   const [activeTab, setActiveTab] = useState("Semua");
   const [page, setPage] = useState(1);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -84,6 +85,14 @@ const AdminOrders = () => {
   const [confirmAction, setConfirmAction] = useState(null);
 
   const tableScrollRef = useRef(null);
+
+  const formatFullCurrency = (amount) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
+  };
 
   useEffect(() => {
     const el = tableScrollRef.current;
@@ -98,7 +107,8 @@ const AdminOrders = () => {
       const matchTab = activeTab === "Semua" || o.status === activeTab;
       const matchSearch =
         o.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
-        o.id.toString().includes(search);
+        o.id.toString().includes(search) ||
+        o.order_number?.toLowerCase().includes(search.toLowerCase());
       return matchTab && matchSearch;
     });
   }, [orders, activeTab, search]);
@@ -126,131 +136,130 @@ const AdminOrders = () => {
   };
 
   const getModalContent = () => {
-  if (!confirmAction) return {};
-  const { order, status } = confirmAction;
+    if (!confirmAction) return {};
+    const { order, status } = confirmAction;
 
-  switch (status) {
-    case "Disiapkan":
-      return {
-        title: "Proses Pesanan?",
-        message: `Yakin mau mulai memproses pesanan #${order.id} dari ${order.customer_name}?`,
-        btnText: "Ya, Proses",
-        variant: "primary"
-      };
-    case "Dapat Diambil":
-      return {
-        title: "Tandai Siap Diambil?",
-        message: `Pesanan #${order.id} milik ${order.customer_name} sudah siap. Pelanggan akan diberitahu untuk mengambil pesanan di toko.`,
-        btnText: "Ya, Siap Diambil",
-        variant: "primary"
-      };
-    case "Dikirim":
-      return {
-        title: "Kirim Pesanan?",
-        message: `Tandai pesanan #${order.id} sedang dalam pengiriman kurir?`,
-        btnText: "Ya, Kirim",
-        variant: "primary"
-      };
-    case "Selesai":
-      return {
-        title: "Selesaikan Pesanan?",
-        message: `Pastikan pesanan #${order.id} benar-benar sudah diterima ${order.customer_name}. Selesaikan sekarang?`,
-        btnText: "Ya, Selesai",
-        variant: "primary"
-      };
-    case "Menunggu":
-      return {
-        title: "Kembalikan Status?",
-        message: `Yakin mau mengembalikan pesanan #${order.id} ke status Menunggu?`,
-        btnText: "Ya, Kembalikan",
-        variant: "primary"
-      };
-    case "Dibatalkan":
-      return {
-        title: "Batalkan Pesanan?",
-        message: `Kamu yakin mau membatalkan pesanan #${order.id} dari ${order.customer_name}?`,
-        btnText: "Ya, Batalkan",
-        variant: "danger"
-      };
-    default:
-      return {
-        title: "Update Status",
-        message: "Yakin melanjutkan aksi ini?",
-        btnText: "Lanjut",
-        variant: "primary"
-      };
-  }
-};
+    switch (status) {
+      case "Disiapkan":
+        return {
+          title: "Proses Pesanan?",
+          message: `Yakin mau mulai memproses pesanan #${order.id} dari ${order.customer_name}?`,
+          btnText: "Ya, Proses",
+          variant: "primary"
+        };
+      case "Dapat Diambil":
+        return {
+          title: "Tandai Siap Diambil?",
+          message: `Pesanan #${order.id} milik ${order.customer_name} sudah siap. Pelanggan akan diberitahu untuk mengambil pesanan di toko.`,
+          btnText: "Ya, Siap Diambil",
+          variant: "primary"
+        };
+      case "Dikirim":
+        return {
+          title: "Kirim Pesanan?",
+          message: `Tandai pesanan #${order.id} sedang dalam pengiriman kurir?`,
+          btnText: "Ya, Kirim",
+          variant: "primary"
+        };
+      case "Selesai":
+        return {
+          title: "Selesaikan Pesanan?",
+          message: `Pastikan pesanan #${order.id} benar-benar sudah diterima ${order.customer_name}. Selesaikan sekarang?`,
+          btnText: "Ya, Selesai",
+          variant: "primary"
+        };
+      case "Menunggu":
+        return {
+          title: "Kembalikan Status?",
+          message: `Yakin mau mengembalikan pesanan #${order.id} ke status Menunggu?`,
+          btnText: "Ya, Kembalikan",
+          variant: "primary"
+        };
+      case "Dibatalkan":
+        return {
+          title: "Batalkan Pesanan?",
+          message: `Kamu yakin mau membatalkan pesanan #${order.id} dari ${order.customer_name}?`,
+          btnText: "Ya, Batalkan",
+          variant: "danger"
+        };
+      default:
+        return {
+          title: "Update Status",
+          message: "Yakin melanjutkan aksi ini?",
+          btnText: "Lanjut",
+          variant: "primary"
+        };
+    }
+  };
 
   const ActionButtons = ({ order }) => {
-  const btnClass = "p-2.5 rounded-xl transition-all shadow-sm border active:scale-95";
+    const isPaid = order.paymentStatus === "PAID" || order.payment_status === "PAID";
+    const btnClass = "p-2.5 rounded-xl transition-all shadow-sm border active:scale-95 flex items-center justify-center";
+    const disabledBtnClass = "p-2.5 rounded-xl transition-all shadow-sm border opacity-50 cursor-not-allowed bg-slate-50 text-slate-400 border-slate-200 flex items-center justify-center";
 
-  return (
-    <div className="flex gap-2">
-      <button
-        onClick={() => openDetail(order)}
-        className={`${btnClass} bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-300`}
-      >
-        <Eye size={14} />
-      </button>
-
-      {order.status === "Menunggu" && (
-        <>
-          <button
-            onClick={() => setConfirmAction({ order, status: "Disiapkan" })}
-            className={`${btnClass} bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-[#1a4d2e] hover:text-white`}
-          >
-            <Briefcase size={14} strokeWidth={2.5} />
-          </button>
-          <button
-            onClick={() => setConfirmAction({ order, status: "Dibatalkan" })}
-            className={`${btnClass} bg-red-50 text-red-500 border-red-100 hover:bg-red-500 hover:text-white`}
-          >
-            <Ban size={14} />
-          </button>
-        </>
-      )}
-
-      {order.status === "Disiapkan" && (
-        <>
-          {order.is_pickup ? (
-            <button
-              onClick={() => setConfirmAction({ order, status: "Dapat Diambil" })}
-              className={`${btnClass} bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-600 hover:text-white`}
-            >
-              <Store size={14} />
-            </button>
-          ) : (
-            <button
-              onClick={() => setConfirmAction({ order, status: "Dikirim" })}
-              className={`${btnClass} bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-600 hover:text-white`}
-            >
-              <Truck size={14} />
-            </button>
-          )}
-        </>
-      )}
-
-      {(order.status === "Dikirim" || order.status === "Dapat Diambil") && (
+    return (
+      <div className="flex gap-2">
         <button
-          onClick={() => setConfirmAction({ order, status: "Selesai" })}
-          className={`${btnClass} bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white`}
+          onClick={() => openDetail(order)}
+          title="Detail Pesanan"
+          className={`${btnClass} bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-300`}
         >
-          <CheckCircle2 size={14} />
+          <Eye size={14} />
         </button>
-      )}
 
-      {order.status === "Dibatalkan" && (
-        <button
-          onClick={() => setConfirmAction({ order, status: "Menunggu" })}
-          className={`${btnClass} bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-200`}
-        >
-          <RotateCcw size={14} />
-        </button>
-      )}
-    </div>
-  );
-};
+        {order.status === "Menunggu" && (
+          <>
+            {isPaid || order.is_pickup ? (
+              <button
+                onClick={() => setConfirmAction({ order, status: "Disiapkan" })}
+                title={order.is_pickup ? "Proses Pesanan (Bayar di Toko)" : "Proses Pesanan"}
+                className={`${btnClass} bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-[#1a4d2e] hover:text-white`}
+              >
+                <Briefcase size={14} strokeWidth={2.5} />
+              </button>
+            ) : (
+              <button
+                disabled
+                title="Tidak bisa diproses: Pelanggan belum membayar"
+                className={disabledBtnClass}
+              >
+                <Briefcase size={14} strokeWidth={2.5} />
+              </button>
+            )}
+          </>
+        )}
+
+        {order.status === "Disiapkan" && (
+          <>
+            {order.is_pickup ? (
+              <button
+                onClick={() => setConfirmAction({ order, status: "Dapat Diambil" })}
+                className={`${btnClass} bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-600 hover:text-white`}
+              >
+                <Store size={14} />
+              </button>
+            ) : (
+              <button
+                onClick={() => setConfirmAction({ order, status: "Dikirim" })}
+                className={`${btnClass} bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-600 hover:text-white`}
+              >
+                <Truck size={14} />
+              </button>
+            )}
+          </>
+        )}
+
+        {(order.status === "Dikirim" || order.status === "Dapat Diambil") && (
+          <button
+            onClick={() => setConfirmAction({ order, status: "Selesai" })}
+            className={`${btnClass} bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white`}
+          >
+            <CheckCircle2 size={14} />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   const modalContent = getModalContent();
 
@@ -270,7 +279,7 @@ const AdminOrders = () => {
                 Kelola Pesanan
               </h1>
               <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
-                Monitoring Transaksi UD BAROKAH
+                Monitoring Pesanan UD BAROKAH
               </p>
             </div>
           </div>
@@ -352,7 +361,7 @@ const AdminOrders = () => {
         <main className="flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div
-              className="flex-1 overflow-auto custom-scrollbar"
+              className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar" 
               ref={tableScrollRef}
             >
               <table className="w-full">
@@ -363,6 +372,7 @@ const AdminOrders = () => {
                       "Pelanggan",
                       "Tanggal",
                       "Total Bayar",
+                      "Pembayaran",
                       "Status",
                       "Aksi",
                     ].map((h) => (
@@ -378,7 +388,7 @@ const AdminOrders = () => {
                 <tbody className="divide-y divide-slate-50">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={6} className="py-24 text-center">
+                      <td colSpan={7} className="py-24 text-center">
                         <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-2" />
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
                           Memuat Data...
@@ -387,51 +397,67 @@ const AdminOrders = () => {
                     </tr>
                   ) : (
                     <>
-                      {paginatedItems.map((o) => (
-                        <tr
-                          key={o.id}
-                          className="hover:bg-slate-50/50 transition-colors h-[68px]"
-                        >
-                          <td className="px-8 py-5">
-                            <span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
-                              #{o.id}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold uppercase truncate tracking-tight">
-                                {o.customer_name}
+                      {paginatedItems.map((o) => {
+                        const isPaid = o.paymentStatus === "PAID" || o.payment_status === "PAID";
+                        return (
+                          <tr
+                            key={o.id}
+                            className="hover:bg-slate-50/50 transition-colors h-[68px]"
+                          >
+                            <td className="px-8 py-5">
+                              <span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
+                                #{o.id}
                               </span>
-                              <span className="text-[9px] text-slate-400 font-bold uppercase">
-                                ID: {String(o.user_id).split("-")[0]}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5 text-[10px] font-bold text-slate-500 uppercase">
-                            {o.created_at}
-                          </td>
-                          <td className="px-8 py-5 text-xs font-black text-slate-900">
-                            {formatRupiah(o.total_price)}
-                          </td>
-                          <td className="px-8 py-5">
-                            <div
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${STATUS_CONFIG[o.status]?.bg} ${STATUS_CONFIG[o.status]?.text} ${STATUS_CONFIG[o.status]?.border}`}
-                            >
-                              {STATUS_CONFIG[o.status]?.icon} {o.status}
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <ActionButtons order={o} />
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-8 py-5">
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold uppercase truncate tracking-tight">
+                                  {o.customer_name}
+                                </span>
+                                <span className="text-[9px] text-slate-400 font-bold uppercase">
+                                  {o.customer_phone || "-"}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-8 py-5 text-[10px] font-bold text-slate-500 uppercase">
+                              {o.created_at}
+                            </td>
+                            <td className="px-8 py-5 text-xs font-black text-slate-900">
+                              {formatFullCurrency(o.total_price || o.total_amount || 0)}
+                            </td>
+                            <td className="px-8 py-5">
+                              <div
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${
+                                  isPaid 
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                    : o.is_pickup 
+                                      ? "bg-amber-50 text-amber-600 border-amber-100"
+                                      : "bg-red-50 text-red-500 border-red-100"
+                                }`}
+                              >
+                                {isPaid ? 'Lunas' : o.is_pickup ? 'Bayar di Toko' : 'Belum Dibayar'}
+                              </div>
+                            </td>
+                            <td className="px-8 py-5">
+                              <div
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${STATUS_CONFIG[o.status]?.bg} ${STATUS_CONFIG[o.status]?.text} ${STATUS_CONFIG[o.status]?.border}`}
+                              >
+                                {STATUS_CONFIG[o.status]?.icon} {o.status}
+                              </div>
+                            </td>
+                            <td className="px-8 py-5">
+                              <ActionButtons order={o} />
+                            </td>
+                          </tr>
+                        );
+                      })}
                       {paginatedItems.length < PER_PAGE && (
                         <tr
                           style={{
                             height: `${(PER_PAGE - paginatedItems.length) * 68}px`,
                           }}
                         >
-                          <td colSpan={6} />
+                          <td colSpan={7} />
                         </tr>
                       )}
                     </>

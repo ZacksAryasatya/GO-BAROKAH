@@ -33,16 +33,15 @@ export const useAddressLogic = () => {
   const handleSaveAddress = async (formData, editId) => {
     setIsLoading(true);
     
-    // PERBAIKAN: Validasi tipe data biar 100% cocok sama Swagger lu
     const payload = {
       label: formData.label,
       recipient_name: formData.recipient_name, 
       recipient_phone: formData.recipient_phone, 
       address_detail: formData.address_detail, 
       courier_note: formData.courier_note || "", 
-      latitude: Number(formData.latitude) || 0, // Pastiin float
-      longitude: Number(formData.longitude) || 0, // Pastiin float
-      is_default: editId ? Boolean(formData.is_default || formData.isDefault) : false, // Pastiin boolean
+      latitude: Number(formData.latitude) || 0, 
+      longitude: Number(formData.longitude) || 0, 
+      is_default: editId ? Boolean(formData.is_default || formData.isDefault) : false, 
     };
 
     try {

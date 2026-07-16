@@ -32,7 +32,6 @@ const AddressPage = () => {
   const openModal = (item = null) => {
     if (item) {
       setEditId(item.id || item._id);
-      // PERBAIKAN: Tambahin courier_note, latitude, longitude biar pas diedit datanya muncul di modal & peta
       setFormData({
         label: item.label || "",
         recipient_name: item.recipientName || item.recipient_name || "",
@@ -167,7 +166,6 @@ const AddressPage = () => {
       <AddressModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        // PERBAIKAN: Hapus e.preventDefault() dan gunakan dataDariModal, bukan formData asli
         onSubmit={async (dataDariModal) => {
           if (await handleSaveAddress(dataDariModal, editId)) {
             setIsModalOpen(false);

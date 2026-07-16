@@ -29,10 +29,10 @@ const ProductCard = ({ prod }) => {
         {prod.name}
       </h3>
       {hasDiscount ? (
-        <>
-          <p className="text-xs font-black text-red-500">{formatIDR(prod.final_price)}</p>
-          <p className="text-[10px] font-bold text-gray-300 line-through">{formatIDR(prod.price)}</p>
-        </>
+        <div className="flex flex-col mt-1">
+          <p className="text-[10px] font-bold text-red-500 line-through mb-0.5">{formatIDR(prod.price)}</p>
+          <p className="text-xs font-black text-[#3A5A4D]">{formatIDR(prod.final_price)}</p>
+        </div>
       ) : (
         <p className="text-xs font-black text-gray-600">{formatIDR(prod.price)}</p>
       )}

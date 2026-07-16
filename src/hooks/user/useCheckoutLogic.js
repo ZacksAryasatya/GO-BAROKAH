@@ -1,17 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext'; 
 import { addressService } from '../../services/user/addressService'; 
+import orderService from '../../services/user/orderService'; 
 import { formatIDR } from '../../utils/formatCurrency';
 
 export const useCheckoutLogic = () => {
   const { cartItems, cartSummary } = useCart();
   const { user } = useAuth(); 
   
-  const [selectedLocation, setSelectedLocation] = useState('');
   const [isPickup, setIsPickup] = useState(false);
   const [namaPenerima, setNamaPenerima] = useState('');
   const [alamatDetail, setAlamatDetail] = useState('');
+
+  const [rawShipping, setRawShipping] = useState(0);
+  const [rawTotal, setRawTotal] = useState(0);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+
+  const rawSubtotal = cartSummary?.grand_total ?? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   useEffect(() => {
     if (user && user.username) {
@@ -34,26 +40,39 @@ export const useCheckoutLogic = () => {
     if (user) loadDefaultAddress();
   }, [user]);
 
-  const zones = [
-    { name: 'Pangkalan Bun (Kota)', dist: 5, rate: 0 },
-    { name: 'Kumai', dist: 15, rate: 0 },
-    { name: 'Pangkalan Lada', dist: 45, rate: 0.015 }, 
-    { name: 'Pangkalan Banteng', dist: 65, rate: 0.015 }, 
-    { name: 'Sukamandang', dist: 110, rate: 0.025 },   
-    { name: 'Sukamara', dist: 90, rate: 0.025 },        
-    { name: 'Lamandau', dist: 120, rate: 0.025 },       
-  ];
+  useEffect(() => {
+    if (isPickup) {
+      setRawShipping(0);
+      setRawTotal(rawSubtotal);
+    }
+  }, [isPickup, rawSubtotal]);
 
-  const rawSubtotal = cartSummary?.grand_total ?? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const activeZone = zones.find(z => z.name === selectedLocation);
-  const rawShipping = isPickup ? 0 : (activeZone ? rawSubtotal * activeZone.rate : 0);
-  const total = rawSubtotal + rawShipping;
+  const hitungOngkir = useCallback(async (addressId) => {
+    if (!addressId || isPickup) {
+      setRawShipping(0);
+      setRawTotal(rawSubtotal);
+      return;
+    }
+
+    try {
+      setIsLoadingShipping(true);
+      const response = await orderService.calculateShippingFee(addressId);
+      
+      if (response && response.data) {
+        setRawShipping(response.data.shippingFee);
+        setRawTotal(response.data.grandTotal);
+      }
+    } catch (error) {
+      console.error("Gagal kalkulasi ongkos kirim:", error);
+      setRawShipping(0);
+      setRawTotal(rawSubtotal);
+    } finally {
+      setIsLoadingShipping(false);
+    }
+  }, [isPickup, rawSubtotal]);
 
   return {
     cartItems,
-    zones,
-    selectedLocation,
-    setSelectedLocation,
     isPickup,         
     setIsPickup,      
     namaPenerima, 
@@ -62,8 +81,8 @@ export const useCheckoutLogic = () => {
     setAlamatDetail,
     subtotal: formatIDR(rawSubtotal),
     shippingFee: formatIDR(rawShipping),
-    total: formatIDR(total),
-    activeZone,
-    rawShipping
+    total: formatIDR(rawTotal),
+    hitungOngkir,
+    isLoadingShipping
   };
 };

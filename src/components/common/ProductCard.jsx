@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    if (isInCart || isLoading) return;
+    if (isInCart || isLoading || product.stock <= 0) return;
     if (!user) {
       toast.error("Login terlebih dahulu!");
       return;
@@ -78,12 +78,12 @@ const ProductCard = ({ product }) => {
           </h4>
           <div className="flex flex-col mt-1 sm:mt-2">
             {hasDiscount && (
-              <span className="text-gray-400 text-[10px] sm:text-xs font-bold line-through leading-none mb-0.5">
+              <span className="text-red-500 text-[10px] sm:text-xs font-bold line-through leading-none mb-0.5">
                 {formatIDR(originalPrice)}
               </span>
             )}
             <span
-              className={`font-black tracking-tighter leading-none ${hasDiscount ? "text-red-500" : "text-[#3A5A4D]"} text-base sm:text-lg`}
+              className="font-black tracking-tighter leading-none text-[#3A5A4D] text-base sm:text-lg"
             >
               {formatIDR(displayPrice)}
             </span>
@@ -92,10 +92,12 @@ const ProductCard = ({ product }) => {
       </div>
       <button
         onClick={handleAddToCart}
-        disabled={isInCart || isLoading}
+        disabled={isInCart || isLoading || product.stock <= 0}
         className={`absolute bottom-3 right-3 sm:bottom-6 sm:right-6 h-10 sm:h-11 flex items-center justify-center transition-all duration-500 z-30 rounded-xl sm:rounded-2xl shadow-lg border
           ${
-            isInCart
+            product.stock <= 0
+              ? "bg-gray-100 text-gray-400 px-3 sm:px-4 border-gray-200 w-auto cursor-not-allowed shadow-none"
+              : isInCart
               ? "bg-[#3A5A4D] text-white px-3 sm:px-5 border-[#3A5A4D] w-auto cursor-default opacity-90"
               : isLoading
                 ? "bg-gray-50 text-gray-400 border-gray-100 w-10 sm:w-11 cursor-default"
@@ -104,6 +106,10 @@ const ProductCard = ({ product }) => {
       >
         {isLoading ? (
           <Loader2 size={16} className="animate-spin" />
+        ) : product.stock <= 0 ? (
+          <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+            Stok Kosong
+          </span>
         ) : isInCart ? (
           <>
             <ShoppingBag size={16} className="sm:mr-2" />

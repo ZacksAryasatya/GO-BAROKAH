@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import api, { API_URL } from "../../utils/api";
-import { getAllProducts, getAllCategories, createProduct, updateProduct, deleteProduct, getAllTypes } from "../../services/admin/productService";
- 
+import { 
+  getAllProducts, getAllCategories, getAllTypes, 
+  createProduct, updateProduct, deleteProduct, 
+  updateCategory, updateType 
+} from "../../services/admin/productService";
+
 const buildImageUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
 };
- 
+
 const normalizeProduct = (p) => ({
   ...p,
   id: String(p?.id || p?._id || Math.random()),
@@ -16,17 +20,17 @@ const normalizeProduct = (p) => ({
   type: p.type || { name: "Tanpa Satuan" },
   image_url: buildImageUrl(p.image_url || p.image),
 });
- 
+
 const getErrorMessage = (err, fallback) =>
   err?.response?.data?.message || err?.message || fallback;
- 
+
 export const useAdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [types, setTypes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
- 
+
   const fetchProducts = useCallback(async (isInitial = false) => {
     if (isInitial) setIsLoading(true);
     try {
@@ -43,9 +47,9 @@ export const useAdminProducts = () => {
       setIsLoading(false);
     }
   }, []);
- 
+
   useEffect(() => { fetchProducts(true); }, [fetchProducts]);
- 
+
   const handleAddCategory = async (data) => {
     try {
       const response = await api.post("/api/products/category", data);
@@ -58,7 +62,7 @@ export const useAdminProducts = () => {
       toast.error(msg); throw new Error(msg);
     }
   };
- 
+
   const handleAddType = async (data) => {
     try {
       const response = await api.post("/api/products/type", data);
@@ -71,12 +75,38 @@ export const useAdminProducts = () => {
       toast.error(msg); throw new Error(msg);
     }
   };
- 
+
+  const handleEditCategory = async (id, data) => {
+    try {
+      const response = await updateCategory(id, data);
+      const updatedCat = response?.data?.data || response?.data || response;
+      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...updatedCat } : c)));
+      toast.success("Kategori berhasil diperbarui");
+      return updatedCat;
+    } catch (err) {
+      const msg = getErrorMessage(err, "Gagal memperbarui kategori");
+      toast.error(msg); throw new Error(msg);
+    }
+  };
+
+  const handleEditType = async (id, data) => {
+    try {
+      const response = await updateType(id, data);
+      const updatedType = response?.data?.data || response?.data || response;
+      setTypes((prev) => prev.map((t) => (t.id === id ? { ...t, ...updatedType } : t)));
+      toast.success("Satuan berhasil diperbarui");
+      return updatedType;
+    } catch (err) {
+      const msg = getErrorMessage(err, "Gagal memperbarui satuan");
+      toast.error(msg); throw new Error(msg);
+    }
+  };
+
   const handleCreate = async (productData) => {
     setActionLoading(true);
     try {
       const formData = new FormData();
-      ["name", "category_id", "type_id", "price", "description", "stock", "discount_amount"].forEach((key) => {
+      ["name", "category_id", "type_id", "price", "cost", "description", "stock", "discount_amount"].forEach((key) => {
         if (productData[key] !== undefined && productData[key] !== null) formData.append(key, productData[key]);
       });
       if (productData.image instanceof File) formData.append("image", productData.image);
@@ -89,12 +119,12 @@ export const useAdminProducts = () => {
       toast.error(msg); return { success: false, message: msg };
     } finally { setActionLoading(false); }
   };
- 
+
   const handleUpdate = async (id, productData) => {
     setActionLoading(true);
     try {
       const formData = new FormData();
-      ["name", "category_id", "type_id", "price", "description", "stock", "discount_amount"].forEach((key) => {
+      ["name", "category_id", "type_id", "price", "cost", "description", "stock", "discount_amount"].forEach((key) => {
         if (productData[key] !== undefined && productData[key] !== null) formData.append(key, productData[key]);
       });
       if (productData.image instanceof File) formData.append("image", productData.image);
@@ -108,7 +138,7 @@ export const useAdminProducts = () => {
       toast.error(msg); return { success: false, message: msg };
     } finally { setActionLoading(false); }
   };
- 
+
   const handleDelete = async (id) => {
     setActionLoading(true);
     try {
@@ -121,26 +151,11 @@ export const useAdminProducts = () => {
       toast.error(msg); return { success: false, message: msg };
     } finally { setActionLoading(false); }
   };
- 
-  const handleDeleteCategory = async (id) => {
-    try {
-      await api.delete(`/api/products/category/${id}`);
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-      toast.success("Kategori berhasil dihapus");
-    } catch (err) {
-      toast.error(getErrorMessage(err, "Gagal menghapus kategori"));
-    }
+
+  return { 
+    products, categories, types, isLoading, actionLoading, 
+    fetchProducts, handleCreate, handleUpdate, handleDelete, 
+    handleAddCategory, handleAddType, 
+    handleEditCategory, handleEditType
   };
- 
-  const handleDeleteType = async (id) => {
-    try {
-      await api.delete(`/api/products/type/${id}`);
-      setTypes((prev) => prev.filter((t) => t.id !== id));
-      toast.success("Satuan berhasil dihapus");
-    } catch (err) {
-      toast.error(getErrorMessage(err, "Gagal menghapus satuan"));
-    }
-  };
- 
-  return { products, categories, types, isLoading, actionLoading, fetchProducts, handleCreate, handleUpdate, handleDelete, handleAddCategory, handleAddType, handleDeleteCategory, handleDeleteType };
 };

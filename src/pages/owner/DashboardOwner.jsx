@@ -1,164 +1,231 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/owner/Sidebar'; 
-import { useOwnerDashboard } from '../../hooks/owner/useOwnerDashboard';
-// Import komponen UI yang udah dipisah
-import { StatCard } from '../../components/owner/ui/StatCard';
-import { ChartCard } from '../../components/owner/ui/ChartCard';
-import { 
-  TrendingUp, BarChart3, LineChart, 
-  ShoppingBag, DollarSign, Percent, Users, AlertCircle, Calendar 
-} from 'lucide-react';
+import React, { useMemo } from "react";
+import { DollarSign, TrendingUp, TrendingDown, Activity, Package } from "lucide-react";
+import OwnerSidebar from "../../components/owner/OwnerSidebar";
+import StatCard from "../../components/admin/dashboard/StatCard";
+import { useOwnerAnalytics } from "../../hooks/owner/useOwnerAnalytics";
+import { useAuth } from "../../context/AuthContext";
+import { formatIDR } from "../../utils/formatCurrency";
+
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const DashboardOwner = () => {
-  const navigate = useNavigate();
-  // Ambil data langsung dari hook
-  const { profile, stats, loading, message, recentOrders, topProducts } = useOwnerDashboard();
+  const { user } = useAuth();
+  const { analytics, isLoading, fetchAnalytics } = useOwnerAnalytics();
 
-  if (loading) {
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
+  const [startDate, setStartDate] = React.useState(firstDay);
+  const [endDate, setEndDate] = React.useState(lastDay);
+
+  React.useEffect(() => {
+    fetchAnalytics({ startDate: firstDay, endDate: lastDay });
+  }, []);
+
+  const handleFilter = () => {
+    fetchAnalytics({ startDate, endDate });
+  };
+
+  const firstName = useMemo(() => {
+    const name = user?.username || user?.name || "Owner";
+    return name.split(" ")[0];
+  }, [user]);
+
+  const { omzet, netProfit, cashFlow, costAnalysis } = analytics;
+
+  const getStatusColor = (status) => {
+    if (status === "POSITIVE") return "text-emerald-500 bg-emerald-50";
+    if (status === "NEGATIVE") return "text-red-500 bg-red-50";
+    return "text-yellow-500 bg-yellow-50";
+  };
+
+  const getStatusIcon = (status) => {
+    if (status === "POSITIVE") return <TrendingUp size={20} />;
+    if (status === "NEGATIVE") return <TrendingDown size={20} />;
+    return <Activity size={20} />;
+  };
+
+  const topProductData = useMemo(() => {
+    if (!omzet?.per_product) return [];
+    return omzet.per_product.slice(0, 5).map(p => ({
+      name: p.product_name,
+      revenue: p.revenue
+    }));
+  }, [omzet]);
+
+  if (isLoading) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-[#f3f6f9]">
-        <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#1e2e4d] border-t-transparent"></div>
-        <p className="mt-4 text-xs font-semibold text-slate-500 tracking-wide animate-pulse">Memuat data UD. BAROKAH...</p>
+      <div className="flex h-screen bg-[#F8FAFC]">
+        <OwnerSidebar />
+        <main className="flex-1 flex flex-col items-center justify-center gap-4">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">
+            Memuat data analitik...
+          </p>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#f3f6f9] font-sans antialiased text-slate-700 overflow-hidden">
-      <Sidebar 
-        profileName={profile?.name || profile?.username}
-        profileAvatar={profile?.avatarUrl || profile?.avatar}
-        onProfileClick={() => navigate('/owner/profil')}
-      />
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden text-[13px]">
+      <OwnerSidebar />
 
-      <main className="flex-1 p-8 overflow-y-auto h-full flex justify-center">
-        <div className="w-full max-w-[1300px] space-y-6">
-          
-          <header className="space-y-1">
-            <h1 className="text-[22px] font-bold text-[#0f1d37] tracking-tight">Dashboard</h1>
-            <p className="text-xs text-slate-400 font-medium">Selamat datang di UD BAROKAH Admin Dashboard</p>
-          </header>
-
-          {message?.text && (
-            <div className={`p-4 rounded-xl text-xs font-bold border flex items-center gap-2 tracking-wide ${
-              message.type === 'success' 
-                ? 'bg-[#eefbf4] text-[#10b981] border-[#emerald-100]' 
-                : 'bg-[#fff5f5] text-[#fa5252] border-rose-100'
-            }`}>
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{message.text}</span>
+      <main className="flex-1 flex flex-col relative min-w-0 overflow-hidden">
+        {/* HEADER */}
+        <header className="bg-white px-8 py-5 flex items-center justify-between z-10 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-0.5">OVERVIEW ANALITIK</h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+              Selamat Datang, {firstName}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-600 outline-none px-2 cursor-pointer"
+              />
+              <span className="text-slate-300">-</span>
+              <input 
+                type="date" 
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-600 outline-none px-2 cursor-pointer"
+              />
             </div>
-          )}
+            <button 
+              onClick={handleFilter}
+              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all"
+            >
+              Filter
+            </button>
+          </div>
+        </header>
 
-          <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <ChartCard title="Penjualan Per Hari" icon={<BarChart3 className="h-4 w-4 text-slate-400" />}>
-              <div className="text-[11px] text-slate-400 font-mono tracking-wider">[ Area Chart Render ]</div>
-            </ChartCard>
-            <ChartCard title="Penjualan Per Bulan" icon={<LineChart className="h-4 w-4 text-slate-400" />}>
-              <div className="text-[11px] text-slate-400 font-mono tracking-wider">[ Line Chart Render ]</div>
-            </ChartCard>
-            <ChartCard title="Penjualan Pertahun" icon={<TrendingUp className="h-4 w-4 text-slate-400" />}>
-              <div className="text-[11px] text-slate-400 font-mono tracking-wider">[ Trend Analysis Render ]</div>
-            </ChartCard>
-          </section>
+        {/* CONTENT */}
+        <div className="p-8 flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+          {/* STATS GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatCard 
+              config={{ label: "Total Omzet", icon: DollarSign, variant: "emerald", key: "revenue" }} 
+              statData={{ value: formatIDR(omzet?.omzet || 0) }} 
+            />
+            <StatCard 
+              config={{ label: "Laba Bersih", icon: Activity, variant: "blue", key: "revenue" }} 
+              statData={{ value: formatIDR(netProfit?.filter_3?.value || 0) }} 
+            />
+            <StatCard 
+              config={{ label: "Total Cost", icon: TrendingDown, variant: "red", key: "revenue" }} 
+              statData={{ value: formatIDR(costAnalysis?.total_cost || 0) }} 
+            />
+            <StatCard 
+              config={{ 
+                label: "Arus Kas", 
+                icon: cashFlow?.status === "POSITIVE" ? TrendingUp : (cashFlow?.status === "NEGATIVE" ? TrendingDown : Activity), 
+                variant: cashFlow?.status === "POSITIVE" ? "emerald" : (cashFlow?.status === "NEGATIVE" ? "red" : "amber"), 
+                key: "revenue" 
+              }} 
+              statData={{ 
+                value: formatIDR(cashFlow?.net_cash_flow || 0),
+                badge: (
+                  <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${getStatusColor(cashFlow?.status)}`}>
+                    {cashFlow?.status || "BREAK_EVEN"}
+                  </div>
+                )
+              }} 
+            />
+          </div>
 
-          <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            <StatCard title="Total Pesanan" value={stats.totalOrders || 0} icon={<ShoppingBag />} suffix=" Transaksi" />
-            <StatCard title="Omzet" value={`Rp ${(stats.revenue || 0).toLocaleString('id-ID')}`} icon={<DollarSign />} isCurrency />
-            <StatCard title="Rata-rata Pesanan" value="Rp 0" icon={<Percent />} isCurrency />
-            <StatCard title="Pengguna" value={stats.users || 0} icon={<Users />} suffix=" User" />
-            <StatCard title="Perlu Dikirim" value="0" icon={<AlertCircle />} isHighlight />
-          </section>
-
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
-            {/* Transaksi Terakhir */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_2px_12px_rgba(11,22,44,0.03)] border border-slate-100 overflow-hidden">
-              <div className="p-5 border-b border-slate-50 bg-white">
-                <h3 className="text-sm font-bold text-[#0f1d37] tracking-tight">Transaksi Terakhir</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* PRODUK TERLARIS */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Package size={16} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Produk Terlaris</h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Berdasarkan total omzet</p>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse whitespace-nowrap">
+              <div className="p-0 overflow-x-auto">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-[#fbfcfd] text-slate-400 text-[11px] font-bold uppercase tracking-wider">
-                      <th className="py-4 px-5">ID Pesanan</th>
-                      <th className="py-4 px-5">Pelanggan</th>
-                      <th className="py-4 px-5">Tanggal</th>
-                      <th className="py-4 px-5 text-center">Total Item</th>
-                      <th className="py-4 px-5 text-right">Total Harga</th>
-                      <th className="py-4 px-5 text-center">Status Paket</th>
+                    <tr className="bg-slate-50/50">
+                      <th className="px-6 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Produk</th>
+                      <th className="px-6 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Terjual</th>
+                      <th className="px-6 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Omzet</th>
+                      <th className="px-6 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Laba Kotor</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50 text-xs text-slate-600 font-medium">
-                    {/* Render dari data yang ditarik lewat hook */}
-                    {recentOrders.map((order, idx) => (
-                      <tr key={idx} className="hover:bg-[#f8fafc]/60 transition-colors">
-                        <td className="py-4 px-5 font-semibold text-blue-600 hover:underline cursor-pointer">{order.id}</td>
-                        <td className="py-4 px-5">
-                          <div className="font-bold text-slate-800">{order.customer}</div>
-                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">{order.idCust}</div>
-                        </td>
-                        <td className="py-4 px-5 text-slate-400">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5 text-slate-300" />
-                            <span>{order.date}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-5 text-center">
-                          <span className="bg-slate-100 px-2.5 py-0.5 rounded text-[11px] font-bold text-slate-500">
-                            {order.items} Item
-                          </span>
-                        </td>
-                        <td className="py-4 px-5 text-right font-bold text-[#0f1d37]">
-                          Rp {order.total.toLocaleString('id-ID')}
-                        </td>
-                        <td className="py-4 px-5 text-center">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide ${
-                            order.status === "Menunggu" 
-                              ? "bg-[#fff9db] text-[#f59f00]" 
-                              : "bg-[#eefbf4] text-[#10b981]"
-                          }`}>
-                            {order.status}
-                          </span>
+                  <tbody className="divide-y divide-slate-100">
+                    {omzet?.per_product?.length > 0 ? (
+                      omzet.per_product.slice(0, 5).map((prod, idx) => (
+                        <tr key={prod.product_id || idx} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <p className="text-xs font-bold text-slate-800 line-clamp-1">{prod.product_name}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-[10px] font-bold text-slate-600">
+                              {prod.qty_sold}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-xs font-bold text-emerald-600">
+                            {formatIDR(prod.revenue)}
+                          </td>
+                          <td className="px-6 py-4 text-xs font-bold text-indigo-600">
+                            {formatIDR(prod.gross_profit)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-8 text-center text-xs text-slate-400 font-bold">
+                          Belum ada data produk terjual.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* Produk Terlaris */}
-            <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(11,22,44,0.03)] border border-slate-100 overflow-hidden">
-              <div className="p-5 border-b border-slate-50 bg-white">
-                <h3 className="text-sm font-bold text-[#0f1d37] tracking-tight">Produk Terlaris</h3>
-              </div>
-              <div className="p-4 space-y-2">
-                <div className="grid grid-cols-12 bg-[#fbfcfd] border border-slate-100 p-2.5 rounded-xl text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                  <span className="col-span-3 text-center">Rank</span>
-                  <span className="col-span-9 pl-2">Nama Produk</span>
+            {/* RINCIAN BIAYA */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Rincian Biaya</h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Berdasarkan Kategori</p>
                 </div>
-                <div className="divide-y divide-slate-50">
-                  {/* Render dari data yang ditarik lewat hook */}
-                  {topProducts.map((prod) => (
-                    <div key={prod.no} className="grid grid-cols-12 items-center py-3">
-                      <div className="col-span-3 flex justify-center">
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-lg text-[11px] font-bold ${
-                          prod.no === 1 
-                            ? "bg-[#fff9db] text-[#f59f00]" 
-                            : "bg-slate-100 text-slate-500"
-                        }`}>
-                          #{prod.no}
-                        </span>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {costAnalysis?.breakdown?.length > 0 ? (
+                    costAnalysis.breakdown.map((item, idx) => (
+                      <div key={idx}>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">{item.category}</span>
+                          <span className="text-xs font-bold text-slate-800">{formatIDR(item.total)}</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-red-500 rounded-full" 
+                            style={{ width: `${item.percent}%` }}
+                          />
+                        </div>
+                        <p className="text-right text-[8px] font-black text-slate-400 mt-1">{item.percent}%</p>
                       </div>
-                      <span className="col-span-9 pl-2 font-bold text-slate-800 text-xs">{prod.name}</span>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-xs text-slate-400 font-bold py-4">Belum ada data pengeluaran.</p>
+                  )}
                 </div>
               </div>
             </div>
-          </section>
-
+          </div>
         </div>
       </main>
     </div>

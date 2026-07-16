@@ -1,20 +1,20 @@
 import {
-  LayoutDashboard, Package, ClipboardList, History,
-  ShoppingCart, Users, DollarSign,
+  LayoutDashboard, Package, ClipboardList, History, ShoppingCart, Users, DollarSign,
+  Truck, Store, AlertTriangle 
 } from "lucide-react";
 
 export const NAV_ITEMS = Object.freeze([
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
   { id: "inventory", label: "Inventaris", icon: Package,         path: "/admin/inventory"  },
   { id: "orders",    label: "Pesanan",    icon: ClipboardList,   path: "/admin/orders"     },
-  { id: "transactions", label: "Riwayat Transaksi", icon: History, path: "/admin/transactions" },
+  { id: "transactions", label: "Riwayat Pesanan", icon: History, path: "/admin/transactions" },
 ]);
 
 export const STAT_CONFIG = Object.freeze([
-  { key: "totalOrders", label: "Total Pesanan", icon: ShoppingCart, variant: "blue" },
-  { key: "customers", label: "Pelanggan", icon: Users, variant: "violet" },
-  { key: "revenue", label: "Pendapatan", icon: DollarSign, variant: "emerald" },
-  { key: "totalProducts", label: "Total Produk", icon: Package, variant: "amber" },
+  { key: "packOrders", label: "Perlu Dikemas", icon: Package, variant: "blue" }, 
+  { key: "shipOrders", label: "Sedang Dikirim", icon: Truck, variant: "purple" },
+  { key: "pickupOrders", label: "Siap Di-Pickup", icon: Store, variant: "orange" },
+  { key: "criticalStock", label: "Stok Kritis", icon: AlertTriangle, variant: "red" },
 ]);
 
 export const ORDER_STATUS = Object.freeze({

@@ -51,18 +51,15 @@ const AddressModal = ({
     }
   }, [isOpen]);
 
-  // FIX BUG PENTING: Cuma set kordinat SEKALI pas modal baru dibuka
   useEffect(() => {
     if (isOpen) {
       if (isEdit && formData.latitude && formData.longitude) {
         setPosition([formData.latitude, formData.longitude]);
       } else {
-        // Reset ke titik default kalau nambah alamat baru
         setPosition([-2.689, 111.621]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, isEdit]); // HAPUS formData dari sini biar pin ga loncat pas ngetik!
+  }, [isOpen, isEdit]); 
 
   const LocationPicker = () => {
     useMapEvents({

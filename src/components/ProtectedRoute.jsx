@@ -18,7 +18,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Cek role dari berbagai kemungkinan struktur response backend
   const userRole = user.role ?? user.Role ?? user?.data?.role;
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {

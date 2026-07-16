@@ -75,11 +75,11 @@ const ProductDetailPage = () => {
             </h1>
             <div className="mb-5 flex flex-col">
               {hasDiscount && (
-                <span className="text-gray-400 text-sm font-bold line-through leading-none mb-1">
+                <span className="text-red-500 text-sm font-bold line-through leading-none mb-1">
                   {formatIDR(product.price)}
                 </span>
               )}
-              <span className={`text-3xl lg:text-4xl font-black tracking-tight ${hasDiscount ? 'text-red-500' : 'text-[#2D5A43]'}`}>
+              <span className="text-3xl lg:text-4xl font-black tracking-tight text-[#2D5A43]">
                 {formatIDR(displayPrice)}
               </span>
             </div>
@@ -96,17 +96,25 @@ const ProductDetailPage = () => {
                 onMinus={decrease}
                 onChange={handleQuantityChange}
                 onBlur={handleBlur}
-                disabled={adding}
+                disabled={adding || product.stock <= 0}
               />
               <button
                 onClick={handleAddClick}
-                disabled={adding}
-                className="flex-1 bg-[#2D5A43] text-white py-4 px-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-[#234735] transition-all shadow-lg shadow-[#2D5A43]/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
+                disabled={adding || product.stock <= 0}
+                className={`flex-1 py-4 px-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:active:scale-100 ${
+                  product.stock <= 0
+                    ? 'bg-gray-100 text-gray-400 shadow-none'
+                    : 'bg-[#2D5A43] text-white hover:bg-[#234735] shadow-[#2D5A43]/20 disabled:opacity-70'
+                }`}
               >
                 {adding ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
                     Menambahkan...
+                  </>
+                ) : product.stock <= 0 ? (
+                  <>
+                    Stok Kosong
                   </>
                 ) : (
                   <>

@@ -1,13 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, AlertTriangle, Search, Bell, Loader2, XCircle } from "lucide-react";
-import { useAdminDashboard } from "../../hooks/admin/useAdminDashboard";
+import { ArrowRight, AlertTriangle, Search, Loader2, XCircle } from "lucide-react";
+
 import { useAuth } from "../../context/AuthContext";
 import { STAT_CONFIG } from "../../constants/adminConstants";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import StatCard from "../../components/admin/dashboard/StatCard";
 import OrderRow from "../../components/admin/dashboard/OrderRow";
 import StockAlertItem from "../../components/admin/StockAlertItem";
+
+import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
+import { useAdminProducts } from "../../hooks/admin/useAdminProducts";
 
 const LoadingSkeleton = () => (
   <div className="flex h-screen bg-[#F8FAFC]">
@@ -40,20 +43,91 @@ const ErrorState = ({ message }) => (
 );
 
 const AdminDashboard = () => {
-  const { data, isLoading, error } = useAdminDashboard();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
+  const { orders, isLoading: ordersLoading } = useAdminOrders();
+  const { products, isLoading: productsLoading } = useAdminProducts();
+
+  const isLoading = ordersLoading || productsLoading;
+  
   const firstName = useMemo(() => {
     const name = user?.username || user?.name || "Admin";
     return name.split(" ")[0];
   }, [user]);
 
-  if (isLoading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error} />;
-  if (!data) return <ErrorState message="Data dashboard kosong." />;
+  const formatRupiahUtuh = (angka) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(angka || 0);
+  };
 
-  const lowStockCount = data?.lowStock?.length ?? 0;
+  const recentOrders = useMemo(() => {
+    if (!orders || orders.length === 0) return [];
+    
+    let filteredOrders = orders;
+    
+    if (search) {
+      const lowerSearch = search.toLowerCase();
+      filteredOrders = filteredOrders.filter(o => 
+        o.customer_name?.toLowerCase().includes(lowerSearch) ||
+        o.id.toString().includes(search) ||
+        o.order_number?.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    return filteredOrders.slice(0, 5).map(o => ({
+      id: o.id, 
+      customer: o.customer_name,
+      date: o.created_at || "N/A", 
+      total: formatRupiahUtuh(o.total_price),
+      status: o.status
+    }));
+  }, [orders, search]);
+
+  const CRITICAL_LIMIT = 10;
+
+  const lowStockProducts = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    
+    return products
+      .filter(p => p.stock <= CRITICAL_LIMIT)
+      .slice(0, 5) 
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        stock: p.stock,
+        maxStock: 100, 
+        unit: p.type?.name || "Pcs"
+      }));
+  }, [products]);
+
+  const statsData = useMemo(() => {
+    if (!orders || !products) return {};
+
+    const packOrdersCount = orders.filter(o => o.status === "Menunggu" || o.status === "Disiapkan").length;
+    
+    const shipOrdersCount = orders.filter(o => o.status === "Dikirim").length;
+    
+    const pickupOrdersCount = orders.filter(o => o.status === "Dapat Diambil").length;
+    
+    const criticalStockCount = products.filter(p => p.stock <= CRITICAL_LIMIT).length;
+
+    return {
+      packOrders: { value: packOrdersCount, growth: 0 },
+      shipOrders: { value: shipOrdersCount, growth: 0 },
+      pickupOrders: { value: pickupOrdersCount, growth: 0 },
+      criticalStock: { value: criticalStockCount, growth: 0 },
+    };
+  }, [orders, products]);
+
+  if (isLoading) return <LoadingSkeleton />;
+  if (!orders && !products) return <ErrorState message="Data dashboard kosong." />;
+
+  const lowStockCount = lowStockProducts.length;
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden text-[13px]">
@@ -62,7 +136,7 @@ const AdminDashboard = () => {
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="h-[72px] bg-white border-b border-slate-100 px-8 flex items-center justify-between flex-shrink-0 z-10">
           <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">Ringkasan Bisnis</h2>
+            <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">DASHBOARD ADMIN</h2>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
               Selamat datang kembali, <span className="text-emerald-600">{firstName}</span>
             </p>
@@ -73,16 +147,12 @@ const AdminDashboard = () => {
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari transaksi..."
                 className="pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl w-64 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner"
               />
             </div>
-            <button className="relative p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-emerald-600 transition-all">
-              <Bell size={18} />
-              {lowStockCount > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-bounce" />
-              )}
-            </button>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
@@ -91,7 +161,7 @@ const AdminDashboard = () => {
               <StatCard
                 key={config.key}
                 config={config}
-                statData={data?.stats?.[config.key] ?? { value: 0, growth: 0 }}
+                statData={statsData[config.key] ?? { value: 0, growth: 0 }}
               />
             ))}
           </section>
@@ -108,8 +178,8 @@ const AdminDashboard = () => {
                 </button>
               </div>
               <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
-                {data?.orders?.length > 0 ? (
-                  data.orders.map((order) => <OrderRow key={order.id} order={order} />)
+                {recentOrders.length > 0 ? (
+                  recentOrders.map((order) => <OrderRow key={order.id} order={order} />)
                 ) : (
                   <div className="py-20 text-center opacity-30 font-black uppercase text-[10px] tracking-widest">
                     Data transaksi kosong
@@ -128,8 +198,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
-                {data?.lowStock?.length > 0 ? (
-                  data.lowStock.map((item) => <StockAlertItem key={item.id} item={item} />)
+                {lowStockProducts.length > 0 ? (
+                  lowStockProducts.map((item) => <StockAlertItem key={item.id} item={item} />)
                 ) : (
                   <div className="py-20 text-center opacity-30 font-black uppercase text-[10px] tracking-widest">
                     Persediaan aman

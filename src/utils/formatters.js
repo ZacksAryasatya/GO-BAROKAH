@@ -3,20 +3,12 @@ export const formatRupiah = (amount) => {
   
   if (!numericValue || isNaN(numericValue)) return "Rp 0";
   
-  if (numericValue >= 1_000_000_000_000) {
-    return `Rp ${(numericValue / 1_000_000_000_000).toFixed(1).replace(/\.0$/, "")}T`;
-  }
-  if (numericValue >= 1_000_000_000) {
-    return `Rp ${(numericValue / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  }
-  if (numericValue >= 1_000_000) {
-    return `Rp ${(numericValue / 1_000_000).toFixed(1).replace(/\.0$/, "")}jt`;
-  }
-  if (numericValue >= 1_000) {
-    return `Rp ${(numericValue / 1_000).toFixed(0)}rb`;
-  }
-  
-  return `Rp ${numericValue}`;
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numericValue);
 };
 
 export const formatNumber = (num) => 

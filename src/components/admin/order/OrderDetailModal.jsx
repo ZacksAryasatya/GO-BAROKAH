@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import {
-  X, Package, User, Calendar, CreditCard, ClipboardList,
+  X, Package, User, Calendar, ClipboardList,
   MapPin, Hash, Store, Truck, FileText, Phone, Receipt,
+  CheckCircle2, AlertCircle 
 } from "lucide-react";
-import { formatRupiah } from "../../../utils/formatters";
 
 const OrderDetailModal = ({ order, onClose }) => {
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+
+  const formatFullCurrency = (amount) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
+  };
 
   useEffect(() => {
     if (order) {
@@ -28,6 +36,8 @@ const OrderDetailModal = ({ order, onClose }) => {
 
   if (!shouldRender || !order) return null;
 
+  const isPaid = order.paymentStatus === 'PAID' || order.payment_status === 'PAID';
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       <div
@@ -44,7 +54,7 @@ const OrderDetailModal = ({ order, onClose }) => {
             </div>
             <div>
               <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-tighter">
-                Detail Transaksi
+                Detail Pesanan
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <div className="flex items-center gap-1">
@@ -117,7 +127,7 @@ const OrderDetailModal = ({ order, onClose }) => {
               </div>
               <div className="mt-4">
                 <p className="text-[18px] font-black tracking-tighter leading-none">
-                  {formatRupiah(order.total_price)}
+                  {formatFullCurrency(order.total_price || order.total_amount)}
                 </p>
                 <div className="flex items-center gap-1 mt-1.5 opacity-60">
                   <Calendar size={10} />
@@ -136,14 +146,31 @@ const OrderDetailModal = ({ order, onClose }) => {
                 {order.is_pickup ? "Ambil di Tempat" : "Kirim Kurir"}
               </div>
             </div>
-            <div className="p-3 rounded-2xl bg-white border border-slate-100 flex flex-col gap-1">
-              <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                <CreditCard size={8} /> Metode Pembayaran
+
+            {/* --- UPDATE STATUS PEMBAYARAN --- */}
+            <div className={`p-3 rounded-2xl border flex flex-col gap-1 ${
+              isPaid ? 'bg-emerald-50 border-emerald-100' 
+              : order.is_pickup ? 'bg-amber-50 border-amber-100'
+              : 'bg-red-50 border-red-100'
+            }`}>
+              <span className={`text-[7px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                isPaid ? 'text-emerald-600' 
+                : order.is_pickup ? 'text-amber-600'
+                : 'text-red-500'
+              }`}>
+                {isPaid ? <CheckCircle2 size={8} /> : <AlertCircle size={8} />} 
+                Status Pembayaran
               </span>
-              <p className="text-[10px] font-black text-slate-900 uppercase">
-                {order.payment_method || "Transfer Bank"}
+              <p className={`text-[10px] font-black uppercase ${
+                isPaid ? 'text-emerald-700' 
+                : order.is_pickup ? 'text-amber-700'
+                : 'text-red-600'
+              }`}>
+                {isPaid ? "Lunas" : order.is_pickup ? "Bayar di Toko" : "Belum Dibayar"}
               </p>
             </div>
+            {/* -------------------------------- */}
+            
           </div>
           {order.notes && (
             <div className={`p-4 rounded-2xl bg-amber-50 border border-amber-100 mb-4 transition-all duration-500 delay-[300ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
@@ -185,7 +212,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-right text-[10px] font-black text-slate-900">
-                        {formatRupiah((item.qty || item.quantity) * (item.price || item.unitPrice))}
+                        {formatFullCurrency((item.qty || item.quantity) * (item.price || item.unitPrice))}
                       </td>
                     </tr>
                   ))}

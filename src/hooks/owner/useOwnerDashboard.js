@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-// MOCK DATA UTAMA
 const MOCK_ORDERS = [
   { id: "ORD-001", customer: "Adika imut", idCust: "CUST-001", date: "24/02/2026 14:30", items: 5, total: 1000000, status: "Menunggu" },
   { id: "ORD-002", customer: "Adika imut", idCust: "CUST-001", date: "24/02/2026 14:30", items: 5, total: 1000000, status: "Sedang Disiapkan" }
@@ -20,12 +19,10 @@ export const useOwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Expose mock data ke UI
   const [recentOrders] = useState(MOCK_ORDERS);
   const [topProducts] = useState(MOCK_PRODUCTS);
 
   useEffect(() => {
-    // Simulasi loading API (0.8 detik)
     const timer = setTimeout(() => {
       setStats({
         totalOrders: 156,

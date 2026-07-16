@@ -23,7 +23,7 @@ export const useTransactionHistory = () => {
       if (curr.status === "Berhasil") {
         acc.totalNominal += curr.jumlah;
         acc.suksesCount += 1;
-        acc.totalItem += 1; // FIX: Item bertambah hanya jika nominal masuk ke pendapatan (Berhasil)
+        acc.totalItem += 1; 
       } else if (curr.status === "Menunggu") {
         acc.menungguCount += 1;
       } else if (curr.status === "Gagal") {

@@ -1,5 +1,4 @@
 import React from "react";
-import Hero from '../../components/features/Hero';
 import CategorySection from '../../components/features/CategorySection';
 import DiscountSection from '../../components/features/DiscountSection';
 import FeaturedSection from '../../components/features/FeaturedSection';
@@ -28,7 +27,7 @@ const HomePage = () => {
 
   return (
     <div className="animate-in fade-in duration-700">
-      <Hero />
+
       
       <CategorySection 
         categories={categories}

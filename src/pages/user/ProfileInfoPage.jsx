@@ -1,5 +1,6 @@
 import React from 'react';
 import { useProfileLogic } from '../../hooks/user/useProfileLogic';
+import { User, Mail, Phone } from 'lucide-react';
 import Button from '../../components/common/Button';
 import FormInput from '../../components/common/FormInput';
 
@@ -20,23 +21,27 @@ const ProfileInfoPage = () => {
         <p className="text-sm text-gray-400 mt-1 font-medium">Kelola informasi data diri Anda</p>
       </div>
 
-      <form className="space-y-5" onSubmit={handleSaveProfile}>
+      <form className="space-y-6 mt-6" onSubmit={handleSaveProfile}>
         <FormInput
-          label="Nama"
+          label="Nama Lengkap"
           name="username"
           type="text"
           value={formData?.username || ''}
           onChange={handleChange}
-          placeholder="Masukkan nama Anda"
+          placeholder="Masukkan nama lengkap Anda"
+          icon={<User size={18} className="text-gray-400" />}
+          className="!py-3.5 !rounded-2xl !bg-gray-50 !border-gray-100 hover:!border-gray-200 focus:!bg-white focus:!border-[#2D5A43] focus:!ring-4 focus:!ring-[#2D5A43]/10 text-gray-900 font-bold transition-all"
           required
         />
         <FormInput
-          label="Email"
+          label="Alamat Email"
           name="email"
           type="email"
           value={formData?.email || ''}
-          placeholder="Masukkan email Anda"
+          placeholder="contoh@email.com"
           onChange={handleChange}
+          icon={<Mail size={18} className="text-gray-400" />}
+          className="!py-3.5 !rounded-2xl !bg-gray-50 !border-gray-100 hover:!border-gray-200 focus:!bg-white focus:!border-[#2D5A43] focus:!ring-4 focus:!ring-[#2D5A43]/10 text-gray-900 font-bold transition-all"
           required
         />
         <FormInput
@@ -46,6 +51,8 @@ const ProfileInfoPage = () => {
           value={formData?.phone || ''}
           onChange={handleChange}
           placeholder="Contoh: 08123456789"
+          icon={<Phone size={18} className="text-gray-400" />}
+          className="!py-3.5 !rounded-2xl !bg-gray-50 !border-gray-100 hover:!border-gray-200 focus:!bg-white focus:!border-[#2D5A43] focus:!ring-4 focus:!ring-[#2D5A43]/10 text-gray-900 font-bold transition-all"
           required
         />
 

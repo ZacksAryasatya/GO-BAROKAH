@@ -1,23 +1,22 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   ChevronLeft, ChevronRight, Search, Loader2, Wallet, Clock, 
-  CheckCircle2, XCircle, CreditCard, Calendar, Store, Truck, Package
+  CheckCircle2, XCircle, CreditCard, Calendar, Store, Truck, Package, Eye
 } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
+import OrderDetailModal from "../../components/admin/order/OrderDetailModal";
 import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
-import { formatRupiah } from "../../utils/formatters";
+
+const formatRupiahUtuh = (angka) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(angka || 0);
+};
 
 const PER_PAGE = 10;
-const TABS = ["Semua", "Menunggu", "Disiapkan", "Diambil", "Batal"];
-const STATUS_MAP = {
-  "Menunggu": "Menunggu",
-  "Disiapkan": "Disiapkan",
-  "Dikirim": "Menunggu",
-  "Dapat Diambil": "Disiapkan",
-  "Selesai": "Diambil",
-  "Dibatalkan": "Batal"
-};
+const TABS = ["Semua", "Selesai", "Dibatalkan"];
 
 const STATUS_CONFIG = {
   "Selesai": { bg: "bg-emerald-50 text-emerald-600 border-emerald-100", icon: <CheckCircle2 size={10} /> },
@@ -34,7 +33,14 @@ const AdminTransactionHistory = () => {
   const [activeTab, setActiveTab] = useState("Semua");
   const [page, setPage] = useState(1);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const tableScrollRef = useRef(null);
+
+  const openDetail = (order) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     const el = tableScrollRef.current;
@@ -46,18 +52,15 @@ const AdminTransactionHistory = () => {
 
   const filteredData = useMemo(() => {
     return orders.filter((o) => {
-      const currentStatus = STATUS_MAP[o.status] || "Menunggu";
-      const matchTab = activeTab === "Semua" || currentStatus === activeTab;
-      const matchSearch = o.customer_name?.toLowerCase().includes(search.toLowerCase()) || o.id.toString().includes(search);
+      if (o.status !== "Selesai" && o.status !== "Dibatalkan") return false;
+
+      const matchTab = activeTab === "Semua" || o.status === activeTab;
+      const matchSearch = o.customer_name?.toLowerCase().includes(search.toLowerCase()) || o.id.toString().includes(search) || o.order_number?.toLowerCase().includes(search.toLowerCase());
       return matchTab && matchSearch;
     });
   }, [orders, activeTab, search]);
 
-  const stats = useMemo(() => ({
-    totalAmount: orders.filter(o => o.status === "Selesai").reduce((acc, curr) => acc + curr.total_price, 0),
-    totalCount: orders.length,
-    pending: orders.filter(o => o.status === "Menunggu").length,
-  }), [orders]);
+
 
   const totalPages = Math.ceil(filteredData.length / PER_PAGE) || 1;
   const paginatedItems = filteredData.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -72,18 +75,12 @@ const AdminTransactionHistory = () => {
         >
           <div className="px-8 pt-8 flex items-center justify-between">
             <div className={`transition-all duration-500 ${isScrolled ? "opacity-0 -translate-y-10" : "opacity-100 translate-y-0"}`}>
-              <h1 className="text-xl font-black tracking-tight uppercase">Riwayat Transaksi</h1>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em]">Monitoring Arus Kas UD BAROKAH</p>
+              <h1 className="text-xl font-black tracking-tight uppercase">Riwayat Pesanan</h1>
+              <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em]">Semua Riwayat Pesanan UD BAROKAH</p>
             </div>
           </div>
 
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 px-8 py-6 transition-all duration-500 origin-top ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-[120px]" : "opacity-100 scale-100 mb-0"}`}>
-            <InventoryStatCard label="Total Pendapatan" value={formatRupiah(stats.totalAmount)} subValue="Selesai" icon={<Wallet size={14} />} iconBg="bg-emerald-50 text-emerald-600" />
-            <InventoryStatCard label="Total Transaksi" value={stats.totalCount} subValue="Semua Status" icon={<Calendar size={14} />} iconBg="bg-slate-100 text-slate-600" />
-            <InventoryStatCard label="Perlu Diproses" value={stats.pending} subValue="Menunggu" icon={<Clock size={14} />} iconBg="bg-amber-50 text-amber-600" />
-          </div>
-
-          <div className={`px-8 py-2 flex gap-4 items-center transition-all duration-500 ${isScrolled ? "-translate-y-12" : "translate-y-0"}`}>
+          <div className={`px-8 py-6 flex gap-4 items-center transition-all duration-500 ${isScrolled ? "-translate-y-12" : "translate-y-0"}`}>
             <SearchInput value={search} onChange={(val) => { setSearch(val); setPage(1); }} />
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
               {TABS.map(t => (
@@ -98,16 +95,16 @@ const AdminTransactionHistory = () => {
               <table className="w-full border-collapse">
                 <thead className="bg-slate-50/50 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100">
                   <tr>
-                    {["ID", "Pelanggan", "Pengambilan", "Pembayaran", "Total", "Status"].map((h) => (
-                      <th key={h} className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-left">{h}</th>
+                    {["ID", "Pelanggan", "Tanggal", "Pengiriman", "Pembayaran", "Total", "Status", "Aksi"].map((h) => (
+                      <th key={h} className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {isLoading ? <LoadingState /> : (
                     <>
-                      {paginatedItems.map((o) => <TableRow key={o.id} order={o} />)}
-                      {paginatedItems.length < PER_PAGE && <tr style={{ height: `${(PER_PAGE - paginatedItems.length) * 68}px` }}><td colSpan={6} /></tr>}
+                      {paginatedItems.map((o) => <TableRow key={o.id} order={o} onOpenDetail={openDetail} />)}
+                      {paginatedItems.length < PER_PAGE && <tr style={{ height: `${(PER_PAGE - paginatedItems.length) * 68}px` }}><td colSpan={8} /></tr>}
                     </>
                   )}
                 </tbody>
@@ -117,6 +114,13 @@ const AdminTransactionHistory = () => {
           </div>
         </main>
       </div>
+
+      {isModalOpen && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
@@ -145,32 +149,59 @@ const TabButton = ({ label, active, onClick }) => (
 
 const LoadingState = () => (
   <tr>
-    <td colSpan={6} className="py-24 text-center">
+    <td colSpan={8} className="py-24 text-center">
       <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-2" />
       <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Memuat...</p>
     </td>
   </tr>
 );
 
-const TableRow = ({ order }) => {
+const TableRow = ({ order, onOpenDetail }) => {
   const config = STATUS_CONFIG[order.status];
+  
+  const isPaid = order.payment_status === "PAID" || order.paymentStatus === "PAID" || order.payment_status === "SUCCESS" || order.payment_status === "SETTLED";
+  const paymentLabel = isPaid ? "Lunas" : order.is_pickup ? "Bayar di Toko" : "Belum Lunas";
+  const paymentStyle = isPaid ? "text-emerald-600 bg-emerald-50 border-emerald-100" : order.is_pickup ? "text-amber-600 bg-amber-50 border-amber-100" : "text-red-600 bg-red-50 border-red-100";
+
   return (
     <tr className="hover:bg-slate-50/50 transition-colors h-[68px]">
-      <td className="px-8 py-5"><span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">#{order.id}</span></td>
-      <td className="px-8 py-5 text-xs font-bold uppercase text-slate-700">{order.customer_name}</td>
-      <td className="px-8 py-5">
-        <div className={`inline-flex items-center gap-1.5 text-[9px] font-black px-2 py-1 rounded-lg border uppercase ${order.is_pickup ? "text-orange-600 bg-orange-50 border-orange-100" : "text-blue-600 bg-blue-50 border-blue-100"}`}>
-          {order.is_pickup ? <><Store size={12} /> Ambil</> : <><Truck size={12} /> Kirim</>}
+      <td className="px-4 py-5"><span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">#{order.id}</span></td>
+      <td className="px-4 py-5">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold uppercase truncate tracking-tight text-slate-700">
+            {order.customer_name}
+          </span>
+          <span className="text-[9px] text-slate-400 font-bold uppercase">
+            {order.customer_phone || "-"}
+          </span>
         </div>
       </td>
-      <td className="px-8 py-5 text-[10px] font-bold text-slate-500">
-        <div className="flex items-center gap-2"><CreditCard size={12} /> {order.payment_method || "Transfer Bank"}</div>
+      <td className="px-4 py-5 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">{order.created_at}</td>
+      <td className="px-4 py-5">
+        <div className={`inline-flex items-center gap-1.5 text-[9px] font-black px-2 py-1 rounded-lg border uppercase whitespace-nowrap ${order.is_pickup ? "text-orange-600 bg-orange-50 border-orange-100" : "text-blue-600 bg-blue-50 border-blue-100"}`}>
+          {order.is_pickup ? <><Store size={12} /> Ambil di Toko</> : <><Truck size={12} /> Kirim Kurir</>}
+        </div>
       </td>
-      <td className="px-8 py-5 text-xs font-black text-slate-900">{formatRupiah(order.total_price)}</td>
-      <td className="px-8 py-5">
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${config?.bg} ${config?.text} ${config?.border}`}>
+      <td className="px-4 py-5">
+        <div className={`inline-flex items-center gap-1.5 text-[9px] font-black px-2 py-1 rounded-lg border uppercase whitespace-nowrap ${paymentStyle}`}>
+          <CreditCard size={12} /> {paymentLabel}
+        </div>
+      </td>
+      {/* Pake formatRupiahUtuh di sini */}
+      <td className="px-4 py-5 text-xs font-black text-slate-900 tabular-nums whitespace-nowrap">{formatRupiahUtuh(order.total_price)}</td>
+      <td className="px-4 py-5">
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${config?.bg} ${config?.text} ${config?.border}`}>
           {config?.icon} {order.status}
         </div>
+      </td>
+      <td className="px-4 py-5">
+        <button
+          onClick={() => onOpenDetail(order)}
+          title="Detail Pesanan"
+          className="p-2.5 rounded-xl transition-all shadow-sm border active:scale-95 bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-300 flex items-center justify-center w-9 h-9"
+        >
+          <Eye size={14} />
+        </button>
       </td>
     </tr>
   );

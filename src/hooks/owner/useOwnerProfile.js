@@ -34,7 +34,6 @@ export const useOwnerProfile = () => {
     setIsLoading(true);
     
     return new Promise((resolve) => {
-      // Simulasi update data ke server (Mock)
       setTimeout(() => {
         const newUserState = {
           ...user,
@@ -43,7 +42,6 @@ export const useOwnerProfile = () => {
           avatarUrl: formData.avatarUrl
         };
 
-        // Update context lokal biar UI langsung berubah
         updateUser(newUserState);
         toast.success("Profil Owner berhasil diperbarui (MOCK)!");
         setIsLoading(false);

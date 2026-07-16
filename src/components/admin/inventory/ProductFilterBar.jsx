@@ -1,12 +1,28 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 
 const ProductFilterBar = ({ search, onSearchChange, activecat, onCatChange, categories = [] }) => {
   const filterOptions = ["Semua", ...categories.map(c => c.name)];
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const handleWheel = (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, []);
 
   return (
     <div className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-      <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+      <div ref={scrollRef} className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto no-scrollbar">
         {filterOptions.map((cat) => (
           <button
             key={cat}

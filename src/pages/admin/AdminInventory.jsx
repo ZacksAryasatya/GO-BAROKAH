@@ -11,14 +11,34 @@ import { formatRupiah } from "../../utils/formatters";
 const PER_PAGE = 10;
 
 const AdminInventory = () => {
-  const { products, categories, types, isLoading, actionLoading, handleCreate, handleUpdate, handleDelete, handleAddCategory, handleAddType, handleDeleteCategory, handleDeleteType } = useAdminProducts();
+  const { 
+    products, categories, types, isLoading, actionLoading, 
+    handleCreate, handleUpdate, handleDelete, 
+    handleAddCategory, handleAddType, 
+    handleEditCategory, handleEditType 
+  } = useAdminProducts();
 
-  const stats = useMemo(() => [
-    { label: "Varian", value: products.length, icon: <Package size={16} />, iconBg: "bg-emerald-50 text-emerald-600" },
-    { label: "Total Stok", value: products.reduce((a, p) => a + (Number(p.stock) || 0), 0).toLocaleString("id-ID"), icon: <Database size={16} />, iconBg: "bg-blue-50 text-blue-600" },
-    { label: "Total harga produk", value: formatRupiah(products.reduce((a, p) => a + (Number(p.price) * Number(p.stock) || 0), 0)), icon: <Banknote size={16} />, iconBg: "bg-amber-50 text-amber-600" },
-    { label: "Kosong", value: products.filter((p) => (Number(p.stock) || 0) <= 0).length, icon: <AlertCircle size={16} />, iconBg: "bg-red-50 text-red-600" },
-  ], [products]);
+  const stats = useMemo(() => {
+    const needRestockProducts = products.filter(p => (Number(p.stock) || 0) <= 10);
+    const availableProducts = products.filter(p => (Number(p.stock) || 0) > 10);
+
+    return [
+      { 
+        label: "Perlu Restock", 
+        value: needRestockProducts.length, 
+        icon: <AlertCircle size={16} />, 
+        iconBg: "bg-red-50 text-red-600",
+        items: needRestockProducts 
+      },
+      { 
+        label: "Stok Tersedia", 
+        value: availableProducts.length, 
+        icon: <Package size={16} />, 
+        iconBg: "bg-emerald-50 text-emerald-600",
+        items: availableProducts
+      },
+    ];
+  }, [products]);
 
   const [search, setSearch] = useState("");
   const [activecat, setActivecat] = useState("Semua");
@@ -52,10 +72,10 @@ const AdminInventory = () => {
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
       <AdminSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 bg-[#F8FAFC] transition-all duration-500 ease-in-out overflow-hidden" style={{ maxHeight: isScrolled ? "90px" : "450px" }}>
-          <div className="flex items-center justify-between px-8 pt-8">
+        <div className={`flex-shrink-0 bg-[#F8FAFC] transition-all duration-500 ease-in-out relative ${isScrolled ? "overflow-hidden z-10" : "overflow-visible z-50"}`} style={{ maxHeight: isScrolled ? "90px" : "500px" }}>
+          <div className="flex items-center justify-between px-8 pt-8 relative z-20">
             <div className={`transition-all duration-500 ${isScrolled ? "opacity-0 -translate-y-10" : "opacity-100 translate-y-0"}`}>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">Katalog Produk</h1>
+              <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">Inventaris</h1>
               <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em]">Sistem Inventaris UD BAROKAH</p>
             </div>
             <button onClick={() => openModal("create")} className="flex items-center gap-2 bg-[#1a4d2e] text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg active:scale-95 transition-all">
@@ -63,15 +83,15 @@ const AdminInventory = () => {
               <span className={isScrolled ? "hidden" : "block"}>Produk Baru</span>
             </button>
           </div>
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 px-8 py-6 transition-all duration-500 ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-[140px]" : "opacity-100 scale-100 mb-0"}`}>
+          <div className={`relative z-30 grid grid-cols-1 md:grid-cols-2 gap-5 px-8 py-6 transition-all duration-500 ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-[140px]" : "opacity-100 scale-100 mb-0"}`}>
             {stats.map((s) => <InventoryStatCard key={s.label} {...s} />)}
           </div>
-          <div className={`px-8 py-2 transition-all duration-500 ${isScrolled ? "-translate-y-10" : "translate-y-0"}`}>
+          <div className={`relative z-20 px-8 py-2 transition-all duration-500 ${isScrolled ? "-translate-y-10" : "translate-y-0"}`}>
             <ProductFilterBar search={search} onSearchChange={setSearch} activecat={activecat} onCatChange={setActivecat} categories={categories} />
           </div>
         </div>
 
-        <div className="flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
+        <div className="relative z-10 flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-auto custom-scrollbar" ref={tableScrollRef}>
               <table className="w-full border-collapse min-h-full">
@@ -132,15 +152,15 @@ const AdminInventory = () => {
                               <div className="flex flex-col gap-0.5">
                                 {hasDiscount ? (
                                   <>
-                                    <span className="text-slate-400 text-[10px] font-bold line-through leading-none">
+                                    <span className="text-red-400 text-[10px] font-bold line-through leading-none">
                                       {formatRupiah(p.price)}
                                     </span>
-                                    <span className="font-black text-xs text-red-500">
+                                    <span className="font-black text-xs text-slate-900">
                                       {formatRupiah(p.final_price)}
                                     </span>
                                     <span className="flex items-center gap-1 mt-0.5">
-                                      <Tag size={9} className="text-red-400" />
-                                      <span className="text-[9px] font-black text-red-400 uppercase tracking-wider">
+                                      <Tag size={9} className="text-emerald-500" />
+                                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">
                                         Diskon {p.discount_amount}%
                                       </span>
                                     </span>
@@ -150,6 +170,9 @@ const AdminInventory = () => {
                                     {formatRupiah(p.price)}
                                   </span>
                                 )}
+                                <span className="text-[9px] text-slate-400 font-bold uppercase mt-1">
+                                  Modal: {formatRupiah(p.cost || 0)}
+                                </span>
                               </div>
                             </td>
                             <td className="px-8 py-4">
@@ -203,8 +226,8 @@ const AdminInventory = () => {
           onClose={() => setModalMode(null)}
           onAddCategory={handleAddCategory}
           onAddType={handleAddType}
-          onDeleteCategory={handleDeleteCategory}
-          onDeleteType={handleDeleteType}
+          onEditCategory={handleEditCategory} 
+          onEditType={handleEditType}
           onSubmit={modalMode === "create" ? handleCreate : (data) => handleUpdate(selected.id, data)}
         />
       )}
