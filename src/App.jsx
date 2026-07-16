@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastConfig from "./components/ToastConfig"; 
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,7 +29,8 @@ import OwnerEmployees from "./pages/owner/OwnerEmployees";
 
 function App() {
   return (
-    <AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AuthProvider>
       <Router>
         <ScrollToTop />
         <ToastConfig />
@@ -86,6 +87,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 
