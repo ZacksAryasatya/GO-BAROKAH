@@ -10,6 +10,8 @@ export const useHistoryLogic = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Semua');
+  const [page, setPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState(null);
   const statuses = ['Semua', 'Menunggu', 'Disiapkan', 'Dikirim', 'Selesai', 'Dibatalkan'];
 
   const statusMap = {
@@ -23,13 +25,28 @@ export const useHistoryLogic = () => {
   const fetchHistory = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = {};
+      const params = {
+        page: page,
+        limit: 10
+      };
       if (activeTab !== 'Semua') {
         params.status = statusMap[activeTab];
       }
-
       const response = await orderService.getOrders(params);
-      const apiData = response.data || [];
+      
+      let apiData = [];
+      let meta = null;
+      
+      if (response.data?.data && Array.isArray(response.data.data)) {
+        apiData = response.data.data;
+        meta = response.data.meta || response.data.pagination || null;
+      } else if (Array.isArray(response.data)) {
+        apiData = response.data;
+        meta = response.meta || null;
+      }
+      
+      if (meta) setPaginationMeta(meta);
+
       const mappedOrders = apiData.map(order => {
         const isPickup = order.fulfillmentMethod === 'PICKUP';
         const uiStatusMap = {
@@ -67,7 +84,7 @@ export const useHistoryLogic = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, page]);
 
   useEffect(() => {
     fetchHistory();
@@ -116,17 +133,25 @@ export const useHistoryLogic = () => {
     }
   };
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+
   return {
     orders,
     isLoading,
     activeTab,
-    setActiveTab,
+    setActiveTab: handleTabChange,
     statuses,
     formatCurrency,
     handleStartShopping,
     handleViewDetail,
     handleCancel,
     handleResumePayment,
-    handleReorder
+    handleReorder,
+    page,
+    setPage,
+    paginationMeta
   };
 };

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ClipboardList, Eye, ShoppingBag, Package } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ClipboardList, Eye, ShoppingBag, Package, ChevronLeft, ChevronRight } from "lucide-react";
 import { useHistoryLogic } from "../../hooks/user/useHistoryLogic";
 import Button from "../../components/common/Button";
 import OrderDetailModal from "../../components/forms/OrderDetailModal";
@@ -15,12 +15,18 @@ const HistoryPage = () => {
     handleStartShopping,
     handleCancel,
     handleResumePayment,
-    handleReorder
+    handleReorder,
+    page,
+    setPage,
+    paginationMeta
   } = useHistoryLogic();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [cancelData, setCancelData] = useState({ isOpen: false, orderId: null });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   const handleOpenDetail = (id) => {
     const order = orders.find((o) => o.id === id);
@@ -217,6 +223,32 @@ const HistoryPage = () => {
           </div>
         )}
       </div>
+
+      {paginationMeta && (
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-50 pt-6 mt-8 gap-4">
+          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+            Halaman {paginationMeta.page || page} dari {paginationMeta.totalPages || 1}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-4 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+            >
+              <ChevronLeft size={14} className="mr-1" /> Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              disabled={page >= (paginationMeta.totalPages || 1)}
+              onClick={() => setPage(p => Math.min((paginationMeta.totalPages || 1), p + 1))}
+              className="px-4 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+            >
+              Selanjutnya <ChevronRight size={14} className="ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <OrderDetailModal
         order={selectedOrder}

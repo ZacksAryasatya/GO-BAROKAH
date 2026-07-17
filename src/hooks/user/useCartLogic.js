@@ -11,6 +11,7 @@ export const useCartLogic = () => {
     removeItem,
     clearCart,
     updateQuantity,
+    totalQuantity,
   } = useCart();
 
   const handleIncrement = (item) => addToCart(item);
@@ -42,6 +43,7 @@ export const useCartLogic = () => {
   return {
     cartItems,
     cartSummary,
+    totalQuantity,
     subtotal: formatIDR(subtotalAfterDiscount),
     total: formatIDR(grandTotal), 
     normalSubtotal: formatIDR(normalSubtotal),

@@ -136,6 +136,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         clearCart,
         totalItems: cartItems.length,
+        totalQuantity: cartItems.reduce((acc, item) => acc + item.quantity, 0),
         loadCart,
       }}
     >

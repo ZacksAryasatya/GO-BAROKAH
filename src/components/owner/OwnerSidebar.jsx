@@ -14,10 +14,7 @@ const OwnerSidebar = () => {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const initials = useMemo(() => {
-    const displayName = user?.username || user?.name || "Owner";
-    return displayName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-  }, [user]);
+
 
   return (
     <>
@@ -53,15 +50,7 @@ const OwnerSidebar = () => {
         </nav>
 
         <footer className="mt-auto pt-6 space-y-3">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-2xl border border-white/10 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-[#1a4d2e] flex items-center justify-center text-white font-black text-[10px] shadow-inner uppercase">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate capitalize">{user?.username || user?.name || "Owner"}</p>
-              <p className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Owner</p>
-            </div>
-          </div>
+
 
           <button onClick={() => setShowLogoutModal(true)} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-[0.2em]">
             <LogOut size={14} strokeWidth={3} />

@@ -83,7 +83,7 @@ const VerifyOTP = () => {
             label="KODE OTP"
             icon={<KeyRound size={18} />} 
             type="text" 
-            placeholder="123456" 
+            placeholder="••••••" 
             value={otp} 
             onChange={(e) => setOtp(e.target.value)} 
             required

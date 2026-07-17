@@ -59,7 +59,8 @@ const CheckoutPage = () => {
     }
   }, [selectedAddressId, isPickup, hitungOngkir]);
 
-  const isFormValid = isPickup || selectedAddressId;
+  const totalQuantity = cartItems?.reduce((sum, item) => sum + (item.qty || item.quantity), 0) || 0;
+  const isFormValid = (isPickup || selectedAddressId) && totalQuantity >= 10;
 
   const handleConfirmOrder = () => {
     const orderData = {};
@@ -209,6 +210,14 @@ const CheckoutPage = () => {
               <h3 className="text-sm font-black mb-5 text-gray-900 uppercase tracking-widest pt-6 border-t border-gray-100">
                 Ringkasan <span className="text-[#2D5A43]">Order</span>
               </h3>
+              
+              {totalQuantity < 10 && (
+                <div className="mb-5 bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-100 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest">Minimal Order 10 Barang</p>
+                  <p className="text-[9px] font-bold mt-1 opacity-80">Silakan kembali ke keranjang untuk menambah pesanan</p>
+                </div>
+              )}
+
               <div className="space-y-3 mb-6 text-[11px] uppercase tracking-widest font-black">
                 <div className="flex justify-between text-gray-400">
                   <span>Subtotal</span>

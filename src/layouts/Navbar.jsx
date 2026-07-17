@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
-  { to: '/store', label: 'Shop' },
+  { to: '/store', label: 'Katalog' },
 ];
 
 const CartBadge = ({ count, size = 'md' }) =>

@@ -21,10 +21,10 @@ const CategorySection = ({
           </div>
           <div>
             <p className="text-[8px] font-black text-[#2D5A43] uppercase tracking-[0.25em] leading-none mb-0.5">
-              Filter Belanja
+              Filter kategori
             </p>
             <h2 className="text-lg md:text-xl font-black text-gray-900 tracking-tighter uppercase leading-none">
-              Kategori <span className="text-[#2D5A43]">Pilihan</span>
+              Kategori <span className="text-[#2D5A43]">PRODUK</span>
             </h2>
           </div>
         </div>
