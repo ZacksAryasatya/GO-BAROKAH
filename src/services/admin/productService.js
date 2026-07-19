@@ -1,7 +1,7 @@
 import api from "../../utils/api";
 
 export const getAllProducts = async () => {
-  const res = await api.get("/api/products");
+  const res = await api.get("/api/products/admin/all");
   return res.data;
 };
 
@@ -41,5 +41,10 @@ export const updateProduct = async (id, formData) => {
 
 export const deleteProduct = async (id) => {
   const res = await api.delete(`/api/products/${id}`);
+  return res.data;
+};
+
+export const toggleProductActive = async (id) => {
+  const res = await api.patch(`/api/products/${id}/toggle-active`);
   return res.data;
 };

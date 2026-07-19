@@ -64,8 +64,8 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
 
-          {/* Rute Khusus Admin (Bebas dari CartProvider) */}
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          {/* Rute Khusus Admin (Owner juga boleh akses) */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "owner"]} />}>
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/inventory" element={<AdminInventory />} />

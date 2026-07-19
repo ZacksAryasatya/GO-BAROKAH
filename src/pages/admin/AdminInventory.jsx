@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon, Tag } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon, Tag, Eye, EyeOff } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
 import ProductFilterBar from "../../components/admin/inventory/ProductFilterBar";
@@ -13,7 +13,7 @@ const PER_PAGE = 10;
 const AdminInventory = () => {
   const { 
     products, categories, types, isLoading, actionLoading, 
-    handleCreate, handleUpdate, handleDelete, 
+    handleCreate, handleUpdate, handleDelete, handleToggleActive,
     handleAddCategory, handleAddType, 
     handleEditCategory, handleEditType 
   } = useAdminProducts();
@@ -115,10 +115,15 @@ const AdminInventory = () => {
                       {paginatedItems.map((p) => {
                         const hasDiscount = p.discount_amount > 0 && p.final_price > 0 && p.final_price !== p.price;
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50/50 h-[73px]">
+                          <tr key={p.id} className={`hover:bg-slate-50/50 h-[73px] transition-colors ${!p.is_active ? "opacity-50 grayscale" : ""}`}>
                             <td className="px-8 py-4">
                               <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center">
+                                <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center relative">
+                                  {!p.is_active && (
+                                    <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center z-10">
+                                      <EyeOff size={16} className="text-white" />
+                                    </div>
+                                  )}
                                   {p.image_url || p.image ? (
                                     <img
                                       src={p.image_url || p.image}
@@ -177,6 +182,17 @@ const AdminInventory = () => {
                             </td>
                             <td className="px-8 py-4">
                               <div className="flex gap-2">
+                                <button 
+                                  onClick={() => handleToggleActive(p.id)} 
+                                  className={`p-2.5 rounded-xl active:scale-90 transition-all ${
+                                    p.is_active 
+                                      ? "bg-slate-50 text-slate-400 hover:text-orange-500" 
+                                      : "bg-orange-50 text-orange-500 hover:text-orange-600"
+                                  }`}
+                                  title={p.is_active ? "Sembunyikan Produk" : "Tampilkan Produk"}
+                                >
+                                  {p.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </button>
                                 <button onClick={() => openModal("edit", p)} className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-600 rounded-xl active:scale-90 transition-all">
                                   <Pencil size={14} />
                                 </button>

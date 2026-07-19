@@ -4,7 +4,7 @@ import api, { API_URL } from "../../utils/api";
 import { 
   getAllProducts, getAllCategories, getAllTypes, 
   createProduct, updateProduct, deleteProduct, 
-  updateCategory, updateType 
+  updateCategory, updateType, toggleProductActive
 } from "../../services/admin/productService";
 
 const buildImageUrl = (path) => {
@@ -18,6 +18,7 @@ const normalizeProduct = (p) => ({
   id: String(p?.id || p?._id || Math.random()),
   category: p.category || { name: "Tanpa Kategori" },
   type: p.type || { name: "Tanpa Satuan" },
+  is_active: p.is_active !== undefined ? p.is_active : true,
   image_url: buildImageUrl(p.image_url || p.image),
 });
 
@@ -152,9 +153,30 @@ export const useAdminProducts = () => {
     } finally { setActionLoading(false); }
   };
 
+  const handleToggleActive = async (id) => {
+    setActionLoading(true);
+    try {
+      await toggleProductActive(id);
+      
+      // Update state secara lokal biar aman dari perbedaan format response backend
+      setProducts((prev) => prev.map((p) => {
+        if (p.id === String(id)) {
+           return { ...p, is_active: !p.is_active };
+        }
+        return p;
+      }));
+      
+      toast.success("Status produk berhasil diubah");
+      return { success: true };
+    } catch (err) {
+      const msg = getErrorMessage(err, "Gagal mengubah status produk");
+      toast.error(msg); return { success: false, message: msg };
+    } finally { setActionLoading(false); }
+  };
+
   return { 
     products, categories, types, isLoading, actionLoading, 
-    fetchProducts, handleCreate, handleUpdate, handleDelete, 
+    fetchProducts, handleCreate, handleUpdate, handleDelete, handleToggleActive,
     handleAddCategory, handleAddType, 
     handleEditCategory, handleEditType
   };
