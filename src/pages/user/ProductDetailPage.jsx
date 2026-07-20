@@ -64,9 +64,8 @@ const ProductDetailPage = () => {
               <span className="text-[#2D5A43] font-black text-[10px] uppercase tracking-[0.25em]">
                 {product.category?.name || product.category}
               </span>
-              <div className="flex items-center gap-1 bg-orange-50 px-2.5 py-1 rounded-full">
-                <Star size={10} className="fill-orange-400 text-orange-400" />
-                <span className="text-orange-600 font-black text-[10px]">4.8</span>
+              <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                <span className="text-emerald-600 font-black text-[10px] uppercase tracking-widest">Sisa Stok: {product.stock}</span>
               </div>
             </div>
 

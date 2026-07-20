@@ -1,4 +1,4 @@
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster, ToastBar } from "react-hot-toast";
 
 const ToastConfig = () => {
   return (
@@ -24,7 +24,17 @@ const ToastConfig = () => {
           iconTheme: { primary: "#ef4444", secondary: "#fff" },
         },
       }}
-    />
+    >
+      {(t) => (
+        <div 
+          onClick={() => toast.dismiss(t.id)} 
+          className="cursor-pointer hover:opacity-90 transition-opacity"
+          title="Klik untuk menutup"
+        >
+          <ToastBar toast={t} />
+        </div>
+      )}
+    </Toaster>
   );
 };
 

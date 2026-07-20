@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import orderService from '../../services/user/orderService'; 
 import { useCart } from '../../context/CartContext'; 
 
@@ -55,7 +56,7 @@ export const usePaymentLogic = () => {
 
     } catch (error) {
       console.error("Checkout Error:", error);
-      alert(error.response?.data?.message || "Gagal memproses pesanan.");
+      toast.error(error.response?.data?.message || "Gagal memproses pesanan.");
     } finally {
       setLoading(false);
     }

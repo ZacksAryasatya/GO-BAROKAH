@@ -36,7 +36,6 @@ function App() {
         <ToastConfig />
 
         <Routes>
-          {/* Rute Umum & Pembeli (DIBUNGKUS CARTPROVIDER DI SINI AJA) */}
           <Route element={
             <CartProvider>
               <MainLayout />
@@ -47,7 +46,6 @@ function App() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
 
-            {/* Rute Campuran Terproteksi (Checkout & Profile) */}
             <Route element={<ProtectedRoute allowedRoles={["user", "admin", "owner"]} />}> 
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccessPage />} /> 
@@ -59,12 +57,10 @@ function App() {
             </Route>
           </Route>
 
-          {/* Rute Otentikasi (Nggak butuh CartProvider) */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
 
-          {/* Rute Khusus Admin (Owner juga boleh akses) */}
           <Route element={<ProtectedRoute allowedRoles={["admin", "owner"]} />}>
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -73,7 +69,6 @@ function App() {
             <Route path="/admin/transactions" element={<AdminTransactionHistory />} />
           </Route>
 
-          {/* RUTE KHUSUS OWNER (Bebas dari CartProvider) */}
           <Route element={<ProtectedRoute allowedRoles={["owner"]} />}>
             <Route path="/owner" element={<Navigate to="/owner/dashboard" replace />} />
             <Route path="/owner/dashboard" element={<DashboardOwner />} />
@@ -81,7 +76,6 @@ function App() {
             <Route path="/owner/employees" element={<OwnerEmployees />} />
           </Route>
 
-          {/* Rute Error & Fallback */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
