@@ -11,6 +11,7 @@ import { GoogleLogin } from '@react-oauth/google';
 const LoginPage = () => {
   const { formData, handleChange, handleLogin, isLoading, error, handleGoogleSuccess } = useLoginLogic();
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FBFBFB] px-6 py-12">
@@ -32,8 +33,24 @@ const LoginPage = () => {
           </p>
         </div>
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-[11px] font-bold rounded-r-xl animate-in slide-in-from-top">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-[11px] font-bold rounded-r-xl flex flex-col gap-2 animate-in slide-in-from-top">
+            <p>{error}</p>
+            {(error.toLowerCase().includes('verifikasi') || error.toLowerCase().includes('aktif') || error.toLowerCase().includes('verify')) && (
+               <button 
+                 type="button" 
+                 onClick={() => {
+                   if (formData.email) {
+                     localStorage.setItem('pendingVerificationEmail', formData.email);
+                     navigate('/verify-otp', { state: { email: formData.email } });
+                   } else {
+                     toast.error("Silakan isi email Anda pada form di bawah");
+                   }
+                 }}
+                 className="mt-1.5 px-3 py-1.5 bg-red-100/50 border border-red-200 text-red-700 hover:bg-red-100 text-[11px] font-bold rounded-lg transition-colors self-start"
+               >
+                 Verifikasi Akun Sekarang
+               </button>
+            )}
           </div>
         )}
 

@@ -13,7 +13,15 @@ const VerifyOTP = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState(null);
-  const email = location.state?.email || "";
+  const email = location.state?.email || localStorage.getItem('pendingVerificationEmail') || "";
+
+  useEffect(() => {
+    if (!email) {
+      toast.error("Silakan register terlebih dahulu.");
+      navigate('/signup');
+    }
+  }, [email, navigate]);
+
   const handleResendOTP = async () => {
     if (!email) {
       toast.error("Email tidak ditemukan, silakan register ulang.");
@@ -41,6 +49,7 @@ const VerifyOTP = () => {
 
     try {
       await authService.verifyOTP(email, otp);
+      localStorage.removeItem('pendingVerificationEmail');
       toast.success('Akun Berhasil Diverifikasi!', {
         style: { background: '#2D5A43', color: '#fff' }
       });
@@ -65,7 +74,7 @@ const VerifyOTP = () => {
 
         <div className="text-left mb-10">
           <h2 className="text-4xl font-black text-gray-900 tracking-tighter leading-tight">
-            Verifikasi <span className="text-[#2D5A43]">Kode.</span>
+            Verifikasi <span className="text-[#2D5A43]">OTP.</span>
           </h2>
           <p className="text-gray-500 font-medium text-sm mt-3 leading-relaxed">
             Masukkan 6 digit kode yang dikirim ke <span className="text-gray-800 font-bold">{email || 'email kamu'}</span>

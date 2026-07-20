@@ -39,9 +39,9 @@ const ProfileInfoPage = () => {
           type="email"
           value={formData?.email || ''}
           placeholder="contoh@email.com"
-          onChange={handleChange}
+          readOnly
           icon={<Mail size={18} className="text-gray-400" />}
-          className="!py-3.5 !rounded-2xl !bg-gray-50 !border-gray-100 hover:!border-gray-200 focus:!bg-white focus:!border-[#2D5A43] focus:!ring-4 focus:!ring-[#2D5A43]/10 text-gray-900 font-bold transition-all"
+          className="!py-3.5 !rounded-2xl !bg-gray-100 !border-gray-200 text-gray-500 font-bold cursor-not-allowed opacity-80"
           required
         />
         <FormInput
@@ -49,7 +49,11 @@ const ProfileInfoPage = () => {
           name="phone"
           type="text"
           value={formData?.phone || ''}
-          onChange={handleChange}
+          onChange={(e) => {
+            if (/^\d*$/.test(e.target.value)) {
+              handleChange(e);
+            }
+          }}
           placeholder="Contoh: 08123456789"
           icon={<Phone size={18} className="text-gray-400" />}
           className="!py-3.5 !rounded-2xl !bg-gray-50 !border-gray-100 hover:!border-gray-200 focus:!bg-white focus:!border-[#2D5A43] focus:!ring-4 focus:!ring-[#2D5A43]/10 text-gray-900 font-bold transition-all"

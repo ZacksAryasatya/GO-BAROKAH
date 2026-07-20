@@ -170,28 +170,24 @@ const OwnerExpenses = () => {
                   ))}
                 </div>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-                  <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center">
-                    <Receipt size={32} className="text-slate-300" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-slate-600 mb-1">Tidak ada data</p>
-                    <p className="text-[10px] font-bold uppercase tracking-wider">Coba sesuaikan pencarian Anda</p>
-                  </div>
+                <div className="h-full flex items-center justify-center">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    BELUM ADA PENGELUARAN
+                  </span>
                 </div>
               )}
             </div>
 
-            <div className="h-16 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between px-6 flex-shrink-0">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Menampilkan <span className="text-slate-700">{filteredExpenses.length > 0 ? (page - 1) * PER_PAGE + 1 : 0}</span> - <span className="text-slate-700">{Math.min(page * PER_PAGE, filteredExpenses.length)}</span> dari <span className="text-slate-700">{filteredExpenses.length}</span> data
+            <div className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                PAGE {page} OF {totalPages || 1}
               </p>
-              <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 transition-all">
-                  <ChevronLeft size={14} />
+              <div className="flex gap-1.5">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+                  <ChevronLeft size={16} />
                 </button>
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 transition-all">
-                  <ChevronRight size={14} />
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+                  <ChevronRight size={16} />
                 </button>
               </div>
             </div>

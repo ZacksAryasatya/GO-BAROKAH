@@ -101,7 +101,7 @@ const AdminTransactionHistory = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {isLoading ? <LoadingState /> : (
+                  {isLoading ? <LoadingState /> : paginatedItems.length === 0 ? <EmptyState /> : (
                     <>
                       {paginatedItems.map((o) => <TableRow key={o.id} order={o} onOpenDetail={openDetail} />)}
                       {paginatedItems.length < PER_PAGE && <tr style={{ height: `${(PER_PAGE - paginatedItems.length) * 68}px` }}><td colSpan={8} /></tr>}
@@ -152,6 +152,14 @@ const LoadingState = () => (
     <td colSpan={8} className="py-24 text-center">
       <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-2" />
       <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Memuat...</p>
+    </td>
+  </tr>
+);
+
+const EmptyState = () => (
+  <tr>
+    <td colSpan={8} className="py-24 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+      DATA TIDAK DITEMUKAN
     </td>
   </tr>
 );

@@ -216,7 +216,7 @@ const DashboardOwner = () => {
                             style={{ width: `${item.percent}%` }}
                           />
                         </div>
-                        <p className="text-right text-[8px] font-black text-slate-400 mt-1">{item.percent}%</p>
+                        <p className="text-right text-[8px] font-black text-slate-400 mt-1">{Number(item.percent).toFixed(1)}%</p>
                       </div>
                     ))
                   ) : (

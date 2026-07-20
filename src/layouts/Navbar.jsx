@@ -71,6 +71,10 @@ const Navbar = () => {
   const navLinkClass = (path, base) =>
     `${base} transition-colors ${isActive(path) ? 'text-[#2D5A43]' : 'text-gray-400 hover:text-black'}`;
 
+  const links = [...NAV_LINKS];
+  if (user?.role === 'owner') links.push({ to: '/owner/dashboard', label: 'Dashboard' });
+  else if (user?.role === 'admin') links.push({ to: '/admin/dashboard', label: 'Dashboard' });
+
   return (
     <nav
       ref={navRef}
@@ -104,7 +108,7 @@ const Navbar = () => {
         </form>
         <div className="hidden lg:flex items-center gap-6 flex-shrink-0">
           <ul className="flex items-center gap-6">
-            {NAV_LINKS.map(({ to, label }) => (
+            {links.map(({ to, label }) => (
               <li key={to}>
                 <Link to={to} className={navLinkClass(to, 'text-[10px] font-black uppercase tracking-[0.2em]')}>{label}</Link>
               </li>
@@ -180,7 +184,7 @@ const Navbar = () => {
         menuOpen ? 'max-h-72 opacity-100 shadow-xl' : 'max-h-0 opacity-0'
       }`}>
         <div className="px-6 py-6 flex flex-col gap-5">
-          {NAV_LINKS.map(({ to, label }) => (
+          {links.map(({ to, label }) => (
             <Link key={to} to={to} onClick={closeAll}
               className={navLinkClass(to, 'text-sm font-black uppercase tracking-[0.2em]')}>
               {label}

@@ -195,7 +195,11 @@ const AddressModal = ({
             label="No. Telepon"
             name="recipient_phone"
             value={formData.recipient_phone ?? ""}
-            onChange={onChange}
+            onChange={(e) => {
+              if (/^\d*$/.test(e.target.value)) {
+                onChange(e);
+              }
+            }}
             placeholder="0812xxxx"
             required
           />

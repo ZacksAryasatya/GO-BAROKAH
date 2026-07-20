@@ -196,16 +196,16 @@ const OwnerEmployees = () => {
               )}
             </div>
 
-            <div className="h-16 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between px-6 flex-shrink-0">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Menampilkan <span className="text-slate-700">{filteredEmployees.length > 0 ? (page - 1) * PER_PAGE + 1 : 0}</span> - <span className="text-slate-700">{Math.min(page * PER_PAGE, filteredEmployees.length)}</span> dari <span className="text-slate-700">{filteredEmployees.length}</span> data
+            <div className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                PAGE {page} OF {totalPages || 1}
               </p>
-              <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 transition-all">
-                  <ChevronLeft size={14} />
+              <div className="flex gap-1.5">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+                  <ChevronLeft size={16} />
                 </button>
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 transition-all">
-                  <ChevronRight size={14} />
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+                  <ChevronRight size={16} />
                 </button>
               </div>
             </div>

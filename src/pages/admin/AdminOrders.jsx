@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Store,
   Ban,
+  Inbox,
 } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
@@ -393,6 +394,12 @@ const AdminOrders = () => {
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
                           Memuat Data...
                         </p>
+                      </td>
+                    </tr>
+                  ) : paginatedItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-24 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        DATA TIDAK DITEMUKAN
                       </td>
                     </tr>
                   ) : (
