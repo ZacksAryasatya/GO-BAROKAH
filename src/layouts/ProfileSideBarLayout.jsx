@@ -47,17 +47,17 @@ const ProfileSideBarLayout = () => {
               <div className="w-12 h-12 bg-[#E8F5EE] rounded-2xl flex items-center justify-center">
                 <User size={22} className="text-[#2D5A43]" />
               </div>
-              <div>
-                <h2 className="text-base font-black text-gray-900 tracking-tight capitalize">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-black text-gray-900 tracking-tight capitalize leading-tight">
                   {user?.name || user?.username || "..."}
                 </h2>
-                <p className="text-gray-400 text-xs font-medium">
+                <p className="text-gray-400 text-[11px] font-medium truncate">
                   {user?.email || "..."}
                 </p>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                className={`flex-shrink-0 ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${
                   mobileMenuOpen
                     ? "bg-[#2D5A43] text-white"
                     : "bg-gray-50 text-gray-500 border border-gray-200"
@@ -110,7 +110,7 @@ const ProfileSideBarLayout = () => {
                     <User size={26} className="text-[#2D5A43]" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-base font-black text-gray-900 tracking-tight capitalize truncate">
+                    <h2 className="text-base font-black text-gray-900 tracking-tight capitalize leading-tight">
                       {user?.name || user?.username || "Memuat..."}
                     </h2>
                     <p className="text-gray-400 text-[12px] font-medium truncate">

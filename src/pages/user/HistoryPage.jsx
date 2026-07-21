@@ -229,22 +229,22 @@ const HistoryPage = () => {
           <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
             Halaman {paginationMeta.page || page} dari {paginationMeta.totalPages || 1}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               disabled={page <= 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              className="px-4 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2.5 text-[10px] sm:text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
             >
-              <ChevronLeft size={14} className="mr-1" /> Sebelumnya
+              <ChevronLeft size={14} className="mr-1" /> <span className="hidden min-[360px]:inline">Sebelumnya</span><span className="inline min-[360px]:hidden">Prev</span>
             </Button>
             <Button
               variant="outline"
               disabled={page >= (paginationMeta.totalPages || 1)}
               onClick={() => setPage(p => Math.min((paginationMeta.totalPages || 1), p + 1))}
-              className="px-4 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2.5 text-[10px] sm:text-[11px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
             >
-              Selanjutnya <ChevronRight size={14} className="ml-1" />
+              <span className="hidden min-[360px]:inline">Selanjutnya</span><span className="inline min-[360px]:hidden">Next</span> <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
         </div>

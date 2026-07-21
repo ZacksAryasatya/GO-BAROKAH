@@ -32,10 +32,17 @@ const CartItem = ({
 
   const isUpdating = loadingAction !== null || isDeleting;
 
-  const handleInputBlur = () => {
+  const handleInputBlur = async () => {
     const val = parseInt(inputQty);
     if (!isNaN(val) && val > 0 && val !== item.quantity) {
-      withLoading("input", () => onQuantityChange(item.id, val));
+      setLoadingAction("input");
+      try {
+        await onQuantityChange(item.id, val);
+      } catch (err) {
+        setInputQty(item.quantity);
+      } finally {
+        setLoadingAction(null);
+      }
     } else {
       setInputQty(item.quantity);
     }
@@ -43,7 +50,6 @@ const CartItem = ({
 
   const handleInputKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleInputBlur();
       e.target.blur();
     }
   };
@@ -52,8 +58,8 @@ const CartItem = ({
   const originalPrice = item.original_price;
 
   return (
-    <div className={`flex gap-3 md:gap-4 py-5 border-b border-gray-100 last:border-0 transition-opacity ${isDeleting ? "opacity-50" : "opacity-100"}`}>
-      <div className="w-[72px] h-[72px] md:w-[88px] md:h-[88px] rounded-lg border border-gray-200 overflow-hidden shrink-0">
+    <div className={`relative flex gap-3 md:gap-5 py-4 px-2 md:px-4 mb-2 border border-transparent hover:border-gray-100 hover:bg-gray-50/50 rounded-2xl transition-all duration-300 group ${isDeleting ? "opacity-50 scale-[0.98]" : "opacity-100"}`}>
+      <div className="w-[80px] h-[80px] md:w-[96px] md:h-[96px] rounded-xl border border-gray-200/80 overflow-hidden shrink-0 shadow-sm relative group-hover:shadow-md transition-all duration-300">
         <img
           src={item.image_url || item.image}
           alt={item.name}
@@ -63,77 +69,75 @@ const CartItem = ({
             e.target.src = "https://placehold.co/400x400/FBFBFB/3A5A4D?text=No+Image";
           }}
         />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
       </div>
 
-      <div className="flex-1 flex flex-col justify-between min-w-0 py-1">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1 min-w-0">
-            {item.stock > 0 && item.stock <= 10 && (
-              <p className="text-[#FA591D] font-bold text-[10px] md:text-xs mb-1 leading-none">
-                Sisa {item.stock}
-              </p>
-            )}
-            <h3 className="text-sm md:text-[15px] font-bold text-gray-800 leading-snug line-clamp-2">
-              {item.name}
-            </h3>
-          </div>
+      <div className="flex-1 flex flex-col min-w-0 py-0.5 pb-8 md:pb-10">
+        <div className="flex-1 min-w-0">
+          {item.stock > 0 && item.stock <= 10 && (
+            <span className="inline-flex items-center bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1.5 shadow-sm">
+              Sisa {item.stock}
+            </span>
+          )}
+          <h3 className="text-sm md:text-base font-black text-gray-800 leading-snug line-clamp-2 pr-2 transition-colors duration-300">
+            {item.name}
+          </h3>
           
-          <div className="text-right shrink-0">
-            <p className="font-black text-gray-900 text-sm md:text-base">
+          <div className="flex flex-col mt-1.5 md:mt-2">
+            <p className="font-black text-[#2D5A43] text-sm md:text-base tracking-tight leading-none">
               {formatIDR(item.price)}
             </p>
             {hasDiscount && (
-              <p className="text-[11px] text-gray-400 font-bold line-through mt-0.5">
+              <p className="text-[11px] text-gray-400 font-bold line-through mt-1 leading-none decoration-gray-300">
                 {formatIDR(originalPrice)}
               </p>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end items-center gap-5 mt-2">
+      {/* Actions (Trash + Quantity) - Absolute positioned to bottom right */}
+      <div className="absolute -bottom-1 md:bottom-1 right-2 md:right-4 flex justify-end items-center gap-3 md:gap-4">
+        <button
+          disabled={isUpdating}
+          onClick={onRemove}
+          className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 active:scale-90 transition-all disabled:opacity-40 shrink-0"
+        >
+          {isDeleting ? <Spinner /> : <Trash2 size={16} strokeWidth={2.5} />}
+        </button>
+        
+        {/* Kapsul Kuantitas Premium */}
+        <div className="flex items-center p-1 rounded-full bg-gray-100/80 border border-gray-200/50 shadow-inner h-[36px] md:h-[40px] w-[96px] md:w-[110px] transition-colors hover:bg-gray-100 shrink-0">
           <button
             disabled={isUpdating}
-            onClick={onRemove}
-            className="text-gray-300 hover:text-red-500 transition-colors disabled:opacity-40"
+            onClick={() => withLoading("decrement", onDecrement)}
+            className="w-7 md:w-8 h-full flex items-center justify-center rounded-full bg-white text-gray-600 hover:text-[#00AA5B] hover:shadow-sm active:scale-95 disabled:opacity-40 transition-all shrink-0"
           >
-            {isDeleting ? <Spinner /> : <Trash2 size={18} strokeWidth={2} />}
+            {loadingAction === "decrement" ? <Spinner /> : <Minus size={14} strokeWidth={3} />}
           </button>
           
-          {/* Kapsul Kuantitas */}
-          <div className="flex items-center border border-gray-200 rounded-full h-[32px] md:h-[36px] w-[96px] md:w-[100px] overflow-hidden bg-gray-50/50">
-            <button
+          {loadingAction === "input" ? (
+            <div className="flex-1 flex items-center justify-center min-w-0"><Spinner /></div>
+          ) : (
+            <input
+              type="number"
+              value={inputQty}
               disabled={isUpdating}
-              onClick={() => withLoading("decrement", onDecrement)}
-              className="w-9 h-full flex items-center justify-center text-gray-500 hover:text-[#00AA5B] hover:bg-white disabled:opacity-40 transition-colors"
-            >
-              {loadingAction === "decrement" ? <Spinner /> : <Minus size={14} strokeWidth={2.5} />}
-            </button>
-            
-            {loadingAction === "input" ? (
-              <div className="flex-1 flex items-center justify-center bg-white"><Spinner /></div>
-            ) : (
-              <input
-                type="number"
-                value={inputQty}
-                disabled={isUpdating}
-                onChange={(e) => setInputQty(e.target.value)}
-                onBlur={handleInputBlur}
-                onKeyDown={handleInputKeyDown}
-               className="flex-1 w-full h-full bg-white text-center text-sm font-black text-gray-800 focus:outline-none border-x border-gray-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-              />
-            )}
-            
-            <button
-              disabled={isUpdating}
-              onClick={() => withLoading("increment", onIncrement)}
-              className="w-9 h-full flex items-center justify-center text-gray-500 hover:text-[#00AA5B] hover:bg-white disabled:opacity-40 transition-colors"
-            >
-              {loadingAction === "increment" ? <Spinner /> : <Plus size={14} strokeWidth={2.5} />}
-            </button>
-          </div>
+              onChange={(e) => setInputQty(e.target.value)}
+              onBlur={handleInputBlur}
+              onKeyDown={handleInputKeyDown}
+             className="flex-1 min-w-0 bg-transparent text-center text-[13px] md:text-[14px] font-black text-gray-900 focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+            />
+          )}
+          
+          <button
+            disabled={isUpdating}
+            onClick={() => withLoading("increment", onIncrement)}
+            className="w-7 md:w-8 h-full flex items-center justify-center rounded-full bg-white text-gray-600 hover:text-[#00AA5B] hover:shadow-sm active:scale-95 disabled:opacity-40 transition-all shrink-0"
+          >
+            {loadingAction === "increment" ? <Spinner /> : <Plus size={14} strokeWidth={3} />}
+          </button>
         </div>
-
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Star, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { formatIDR } from "../../utils/formatCurrency";
 
-const FEATURED_IDS = [16, 17, 18, 20];
+const FEATURED_IDS = [1, 4, 3, 5, 6]; 
 
 const ProductCard = ({ prod }) => {
   const hasDiscount = prod.discount_amount > 0 && prod.final_price > 0 && prod.final_price !== prod.price;

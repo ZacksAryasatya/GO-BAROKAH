@@ -1,5 +1,5 @@
-import React from "react";
-import { LayoutGrid, RotateCcw } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
+import { LayoutGrid, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 
 const CategorySection = ({
   categories,
@@ -7,6 +7,37 @@ const CategorySection = ({
   toggleFilter,
   setActiveFilters,
 }) => {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      // Use Math.ceil to prevent fractional pixel issues
+      setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+    }
+  };
+
+  useEffect(() => {
+    // Delay checkScroll slightly so the browser finishes rendering the list items first
+    const timer = setTimeout(() => {
+      checkScroll();
+    }, 150);
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [categories]);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: direction * 300, behavior: "smooth" });
+    }
+  };
+
   if (!categories || categories.length === 0) return null;
 
   return (
@@ -14,23 +45,46 @@ const CategorySection = ({
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         
         {/* Header Section */}
-        <div className="flex items-center gap-2.5 mb-5">
-          {/* Icon Header */}
-          <div className="w-8 h-8 rounded-lg bg-[#2D5A43]/10 flex items-center justify-center shrink-0">
-            <LayoutGrid size={14} className="text-[#2D5A43]" />
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            {/* Icon Header */}
+            <div className="w-8 h-8 rounded-lg bg-[#2D5A43]/10 flex items-center justify-center shrink-0">
+              <LayoutGrid size={14} className="text-[#2D5A43]" />
+            </div>
+            <div>
+              <p className="text-[8px] font-black text-[#2D5A43] uppercase tracking-[0.25em] leading-none mb-0.5">
+                Filter kategori
+              </p>
+              <h2 className="text-lg md:text-xl font-black text-gray-900 tracking-tighter uppercase leading-none">
+                Kategori <span className="text-[#2D5A43]">PRODUK</span>
+              </h2>
+            </div>
           </div>
-          <div>
-            <p className="text-[8px] font-black text-[#2D5A43] uppercase tracking-[0.25em] leading-none mb-0.5">
-              Filter kategori
-            </p>
-            <h2 className="text-lg md:text-xl font-black text-gray-900 tracking-tighter uppercase leading-none">
-              Kategori <span className="text-[#2D5A43]">PRODUK</span>
-            </h2>
+          
+          <div className="hidden sm:flex items-center gap-1.5">
+            <button 
+              onClick={() => scroll(-1)} 
+              disabled={!canScrollLeft} 
+              className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-700 disabled:opacity-30 transition-all"
+            >
+              <ChevronLeft size={13} strokeWidth={3} />
+            </button>
+            <button 
+              onClick={() => scroll(1)} 
+              disabled={!canScrollRight} 
+              className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-700 disabled:opacity-30 transition-all"
+            >
+              <ChevronRight size={13} strokeWidth={3} />
+            </button>
           </div>
         </div>
         
         {/* Container Scroll Horizontal */}
-        <div className="flex items-center overflow-x-auto gap-3 md:gap-4 pb-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div 
+          ref={scrollRef}
+          onScroll={checkScroll}
+          className="flex items-center overflow-x-auto gap-3 md:gap-4 pb-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        >
           
           {/* ICON RESET */}
           <button

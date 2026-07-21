@@ -135,7 +135,7 @@ const AdminDashboard = () => {
           </div>
         </header>
         <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4 md:py-8 space-y-6 md:space-y-8">
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <section className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {STAT_CONFIG.map((config) => (
               <StatCard
                 key={config.key}

@@ -13,9 +13,28 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  const containerRef = React.useRef(null);
+  const [btnWidth, setBtnWidth] = useState(340);
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth;
+        setBtnWidth(Math.min(400, Math.max(200, width)));
+      }
+    };
+    // Panggil setelah render pertama
+    const timeout = setTimeout(updateWidth, 100);
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFB] px-6 py-12">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-gray-200/60 border border-gray-100 animate-in fade-in zoom-in duration-500">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFB] px-4 md:px-6 py-12">
+      <div className="max-w-md w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-gray-200/60 border border-gray-100 animate-in fade-in zoom-in duration-500">
         <div className="mb-10">
           <Link 
             to="/store" 
@@ -110,7 +129,7 @@ const LoginPage = () => {
           <span className="relative bg-white px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Atau masuk dengan</span>
         </div>
 
-        <div className="mt-6 flex justify-center hover:-translate-y-0.5 transition-transform duration-200">
+        <div ref={containerRef} className="mt-6 flex justify-center hover:-translate-y-0.5 transition-transform duration-200 w-full overflow-hidden rounded-full">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => toast.error('Login Google dibatalkan atau gagal.')}
@@ -118,7 +137,7 @@ const LoginPage = () => {
             size="large"
             text="signin_with"
             shape="pill"
-            width="340"
+            width={btnWidth.toString()}
           />
         </div>
 

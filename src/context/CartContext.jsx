@@ -104,7 +104,20 @@ export const CartProvider = ({ children }) => {
       const res = await cartService.updateItem(productId, Math.max(1, newQty));
       syncCart(res.data);
     } catch (err) {
-      toast.error("Gagal update quantity");
+      let errMsg = err.response?.data?.message || "Gagal update quantity";
+      
+      // Translate common backend errors to Indonesian
+      const lowerErr = errMsg.toLowerCase();
+      if (lowerErr.includes("stock") || lowerErr.includes("quantity")) {
+        errMsg = "Stok barang tidak mencukupi";
+      } else if (lowerErr.includes("not found")) {
+        errMsg = "Produk tidak ditemukan";
+      } else if (lowerErr.includes("unauthorized") || lowerErr.includes("login")) {
+        errMsg = "Sesi telah habis, silakan login kembali";
+      }
+      
+      toast.error(errMsg);
+      throw err;
     }
   };
 

@@ -1,39 +1,56 @@
 import React from "react";
-import { ArrowRight } from "lucide-react"; 
+import { ArrowRight, AlertCircle } from "lucide-react"; 
 
 const OrderSummary = ({ subtotal, total, normalSubtotal, discountTotal, totalQuantity, hasDiscount, onCheckout }) => {
   const isMinOrderMet = totalQuantity >= 10;
   
   return (
-  <div className="bg-white rounded-[2rem] p-6 lg:p-8 border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col">
-    <h3 className="text-sm font-black mb-5 text-gray-900 uppercase tracking-widest">
+  <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden p-6">
+    <h3 className="text-base font-black mb-6 text-gray-900">
       Ringkasan <span className="text-[#2D5A43]">Belanja</span>
     </h3>
-    {hasDiscount && (
-      <div className="space-y-3 mb-6 text-[11px] uppercase tracking-widest font-black">
-        <div className="flex justify-between text-gray-400 items-center">
-          <span>Total Harga ({totalQuantity} barang)</span>
-          <span className="line-through">{normalSubtotal}</span>
+
+    <div className="space-y-4 mb-6">
+      {hasDiscount ? (
+        <>
+          <div className="flex justify-between items-center text-[13px]">
+            <span className="text-gray-500 font-medium">Total Harga ({totalQuantity} barang)</span>
+            <span className="text-gray-400 line-through font-medium decoration-gray-300">{normalSubtotal}</span>
+          </div>
+          <div className="flex justify-between items-center text-[13px]">
+            <span className="text-gray-500 font-medium">Total Diskon</span>
+            <span className="text-[#00AA5B] font-bold">- {discountTotal}</span>
+          </div>
+        </>
+      ) : (
+        <div className="flex justify-between items-center text-[13px]">
+          <span className="text-gray-500 font-medium">Total Harga ({totalQuantity} barang)</span>
+          <span className="text-gray-900 font-bold">{normalSubtotal || total}</span>
         </div>
-        <div className="flex justify-between items-center text-gray-400">
-          <span>Total Diskon</span>
-          <span className="text-[#2D5A43]">- {discountTotal}</span>
-        </div>
-      </div>
-    )}
+      )}
+    </div>
+
+    {/* Divider */}
+    <div className="h-[1px] w-full bg-gray-100 mb-6" />
 
     {/* Total Keseluruhan */}
-    <div className={`flex justify-between items-center mb-8 ${hasDiscount ? 'pt-3 border-t border-gray-100' : ''}`}>
-      <span className="text-[11px] uppercase tracking-widest font-black text-gray-900">Total</span>
-      <span className="text-xl text-[#2D5A43] tracking-tighter font-black leading-none">
+    <div className="flex flex-col gap-1.5 mb-8">
+      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Tagihan</span>
+      <span className="text-3xl text-[#2D5A43] tracking-tighter font-black leading-none">
         {total}
       </span>
     </div>
 
+    {/* Alert Minimal Order */}
     {!isMinOrderMet && (
-      <div className="mb-4 bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-100 text-center">
-        <p className="text-[10px] font-black uppercase tracking-widest">Minimal Order 10 Barang</p>
-        <p className="text-[9px] font-bold mt-1 opacity-80">Kurang {10 - totalQuantity} barang lagi</p>
+      <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-2xl flex gap-3 items-start border border-red-100/50 transition-all">
+        <AlertCircle size={18} className="shrink-0 mt-0.5" strokeWidth={2.5} />
+        <div>
+          <p className="text-[12px] font-black leading-tight">Belum Memenuhi Minimal</p>
+          <p className="text-[11px] font-medium mt-1 opacity-80 leading-relaxed">
+            Tambah <b>{10 - totalQuantity} barang</b> lagi untuk bisa lanjut ke pembayaran.
+          </p>
+        </div>
       </div>
     )}
 
@@ -41,10 +58,14 @@ const OrderSummary = ({ subtotal, total, normalSubtotal, discountTotal, totalQua
     <button
       disabled={!isMinOrderMet}
       onClick={onCheckout}
-      className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-[#2D5A43] text-white flex items-center justify-center gap-2 hover:bg-[#234735] shadow-lg shadow-emerald-900/10 transition-all active:scale-95 group disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
+      className={`w-full py-4 rounded-2xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-300 ${
+        isMinOrderMet
+          ? "bg-[#2D5A43] hover:bg-[#234735] text-white shadow-lg shadow-emerald-900/20 active:scale-[0.98]"
+          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+      }`}
     >
-      Checkout ({totalQuantity})
-      <ArrowRight size={15} strokeWidth={2.5} className="group-hover:translate-x-0.5 transition-transform" />
+      <span>Checkout ({totalQuantity})</span>
+      {isMinOrderMet && <ArrowRight size={18} strokeWidth={2.5} />}
     </button>
   </div>
   );

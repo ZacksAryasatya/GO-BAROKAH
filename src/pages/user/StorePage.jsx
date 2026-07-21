@@ -75,9 +75,9 @@ const StorePage = () => {
           </aside>
           <main className="flex-1 min-w-0">
             {isLoading && (!filteredData || filteredData.length === 0) ? (
-              <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-gray-200 border border-gray-200 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden">
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-transparent border-transparent rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white p-4 animate-pulse">
+                  <div key={i} className="bg-white p-4 animate-pulse rounded-2xl m-1 border border-gray-100">
                     <div className="bg-gray-100 aspect-square rounded-2xl mb-4"></div>
                     <div className="h-4 w-3/4 bg-gray-100 rounded"></div>
                   </div>
@@ -85,7 +85,7 @@ const StorePage = () => {
               </div>
             ) : filteredData && filteredData.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-gray-200 border border-gray-200 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-sm shadow-emerald-900/5">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-0 bg-transparent border-transparent rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden">
                   {filteredData.map((product) => (
                     <div key={product.id} className="bg-white p-0">
                       <ProductCard product={product} />

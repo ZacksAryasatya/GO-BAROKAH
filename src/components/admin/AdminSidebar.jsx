@@ -9,13 +9,22 @@ const AdminSidebar = ({ alertCount = 0, isMobileOpen, setIsMobileOpen }) => {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   
-  const [isMinimized, setIsMinimized] = useState(() => {
+  const [isUserMinimized, setIsUserMinimized] = useState(() => {
     return localStorage.getItem("adminSidebarMinimized") === "true";
   });
 
   useEffect(() => {
-    localStorage.setItem("adminSidebarMinimized", isMinimized);
-  }, [isMinimized]);
+    localStorage.setItem("adminSidebarMinimized", isUserMinimized);
+  }, [isUserMinimized]);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMinimized = isUserMinimized && !isMobile;
 
   const initials = useMemo(() => {
     const displayName = user?.username || user?.name || "Admin";
@@ -37,7 +46,7 @@ const AdminSidebar = ({ alertCount = 0, isMobileOpen, setIsMobileOpen }) => {
       <aside className={`${isMinimized ? "md:w-20" : "md:w-64"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} fixed md:sticky inset-y-0 left-0 w-64 h-screen flex-shrink-0 flex flex-col bg-white py-8 font-sans border-r border-slate-200 transition-all duration-300 ease-in-out z-[60]`}>
         
         <button 
-          onClick={() => setIsMinimized(!isMinimized)}
+          onClick={() => setIsUserMinimized(!isUserMinimized)}
           className="hidden md:flex absolute -right-3 top-8 bg-white text-slate-400 hover:text-[#1a4d2e] w-6 h-6 items-center justify-center rounded-full shadow-md border border-slate-200 transition-colors z-[70]"
           title={isMinimized ? "Perbesar Sidebar" : "Perkecil Sidebar"}
         >

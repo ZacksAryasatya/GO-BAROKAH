@@ -167,7 +167,7 @@ const ProductModal = ({
               </div>
               
               {/* KOLOM KATEGORI */}
-              <div className={`transition-all duration-500 delay-[250ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              <div className={`transition-all duration-500 delay-[250ms] relative z-50 ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Kategori</label>
                 <div className="flex gap-2">
                   {catAction ? (
@@ -211,7 +211,7 @@ const ProductModal = ({
               </div>
               
               {/* KOLOM SATUAN */}
-              <div className={`transition-all duration-500 delay-[300ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              <div className={`transition-all duration-500 delay-[300ms] relative z-40 ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <label className={labelClass}>Satuan</label>
                 <div className="flex gap-2">
                   {typeAction ? (
