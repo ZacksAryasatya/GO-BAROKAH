@@ -44,6 +44,7 @@ export const usePaymentLogic = () => {
         const paymentUrl = paymentRes?.data?.payment_url || paymentRes?.payment_url;
 
         if (paymentUrl) {
+          localStorage.setItem('pendingPayment', 'true');
           window.location.href = paymentUrl;
           return;
         }

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CategorySection from '../../components/features/CategorySection';
 import DiscountSection from '../../components/features/DiscountSection';
 import FeaturedSection from '../../components/features/FeaturedSection';
@@ -9,16 +9,15 @@ import { useHomeLogic } from "../../hooks/user/useHomeLogic";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
-  // Midtrans redirect: kalau ada query param dari Midtrans, langsung arahkan ke halaman riwayat pesanan
+  // Midtrans redirect: cek flag di localStorage, kalau ada berarti user baru balik dari pembayaran
   useEffect(() => {
-    const orderId = searchParams.get("order_id");
-    const transactionStatus = searchParams.get("transaction_status");
-    if (orderId || transactionStatus) {
+    const pendingPayment = localStorage.getItem('pendingPayment');
+    if (pendingPayment) {
+      localStorage.removeItem('pendingPayment');
       navigate("/profile/orders", { replace: true });
     }
-  }, [searchParams, navigate]);
+  }, [navigate]);
   const { 
     loading, 
     categories, 

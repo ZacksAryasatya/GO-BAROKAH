@@ -112,6 +112,7 @@ export const useHistoryLogic = () => {
 
   const handleResumePayment = (url) => {
     if (url) {
+      localStorage.setItem('pendingPayment', 'true');
       window.location.href = url;
     } else {
       alert("Link pembayaran tidak ditemukan.");
