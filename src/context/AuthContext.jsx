@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { authService } from "../services/auth/authService";
+import authService from "../services/auth/authService";
 
 const AuthContext = createContext();
 
@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
       const savedUser = localStorage.getItem("user_session");
 
       if (savedUser) {
-        // Fallback optimis untuk UI yang cepat
         try {
           setUser(JSON.parse(savedUser));
         } catch (err) {
@@ -23,24 +22,22 @@ export const AuthProvider = ({ children }) => {
 
       if (token) {
         try {
-          // Selalu verifikasi token ke server agar hacker tidak bisa spoofing role di localStorage
           const response = await authService.getMe();
-          // Ekstrak data user sesuai response swagger ({ message: "...", user: {...} })
           const serverUser = response?.user || response?.data?.user || response?.account || response;
           
-          // Gabungkan data dari localStorage (yang punya username & phone) dengan data server (menimpa role dengan yang asli)
           let validUser = serverUser;
           if (savedUser) {
             try {
               validUser = { ...JSON.parse(savedUser), ...serverUser };
-            } catch (e) {}
+            } catch (e) {
+              console.error('Gagal parsing session data:', e);
+            }
           }
 
           setUser(validUser);
           localStorage.setItem("user_session", JSON.stringify(validUser));
         } catch (err) {
           console.error("Auth Error (Token Invalid/Expired):", err);
-          // Tendang user keluar jika token ditolak server
           setUser(null);
           localStorage.removeItem("user_session");
           localStorage.removeItem("token");

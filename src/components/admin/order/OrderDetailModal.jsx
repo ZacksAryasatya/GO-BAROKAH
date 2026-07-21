@@ -4,18 +4,11 @@ import {
   MapPin, Hash, Store, Truck, FileText, Phone, Receipt,
   CheckCircle2, AlertCircle 
 } from "lucide-react";
+import { formatFullCurrency } from "../../../utils/formatCurrency";
 
 const OrderDetailModal = ({ isOpen, order, onClose }) => {
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
-
-  const formatFullCurrency = (amount) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount || 0);
-  };
 
   useEffect(() => {
     if (isOpen) {

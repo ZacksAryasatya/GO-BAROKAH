@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { KeyRound, ArrowLeft, RefreshCw } from 'lucide-react';
-import { authService } from '../../services/auth/authService';
+import authService from '../../services/auth/authService';
 import InputField from '../../components/common/FormInput';
 import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';

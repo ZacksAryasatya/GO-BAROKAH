@@ -1,6 +1,6 @@
 import api from '../../utils/api'; 
 
-export const adminOrderService = {
+const adminOrderService = {
   getAllOrders: async (params = {}) => {
     const response = await api.get('/api/admin/orders', { params });
     return response.data;
@@ -21,3 +21,5 @@ export const adminOrderService = {
     return response.data;
   }
 };
+
+export default adminOrderService;

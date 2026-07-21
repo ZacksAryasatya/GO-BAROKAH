@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { adminOrderService } from "../../services/admin/adminOrderService";
+import adminOrderService from "../../services/admin/adminOrderService";
 
 export const useAdminOrders = () => {
   const [orders, setOrders] = useState([]);

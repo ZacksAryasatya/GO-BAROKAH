@@ -21,7 +21,7 @@ import Unauthorized from "./pages/error/Unauthorized";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminOrders from "./pages/admin/AdminOrders"; 
-import AdminTransactionHistory from "./pages/admin/AdminTransactionHistroy"; 
+import AdminTransactionHistory from "./pages/admin/AdminTransactionHistory"; 
 
 import DashboardOwner from "./pages/owner/DashboardOwner"; 
 import OwnerExpenses from "./pages/owner/OwnerExpenses";

@@ -24,6 +24,7 @@ import InventoryStatCard from "../../components/admin/inventory/InventoryStatCar
 import OrderDetailModal from "../../components/admin/order/OrderDetailModal";
 import ConfirmModal from "../../components/forms/ConfirmModal";
 import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
+import { formatFullCurrency } from "../../utils/formatCurrency";
 
 const PER_PAGE = 10;
 const TABS = [
@@ -88,14 +89,6 @@ const AdminOrders = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const tableScrollRef = useRef(null);
-
-  const formatFullCurrency = (amount) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount || 0);
-  };
 
   useEffect(() => {
     const el = tableScrollRef.current;

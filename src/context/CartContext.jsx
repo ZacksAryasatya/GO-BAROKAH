@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useAuth } from "./AuthContext";
 import { cartService } from "../services/user/cartService";
-import { API_URL } from "../utils/api";
+import { buildImageUrl } from "../utils/imageUrl";
 import toast from "react-hot-toast";
 
 const CartContext = createContext();
@@ -17,12 +17,6 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartSummary, setCartSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const buildImageUrl = (path) => {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
-  };
 
   const mapItems = (items = []) =>
     items.map((item) => ({
@@ -51,6 +45,7 @@ export const CartProvider = ({ children }) => {
       syncCart(res.data);
     } catch (err) {
       console.error("Load cart error:", err);
+      toast.error("Gagal memuat keranjang");
     } finally {
       setIsLoading(false);
     }

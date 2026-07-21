@@ -1,13 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { productService } from "../../services/user/productService";
 import { useProductFilter } from "./useProductFilter";
-import { API_URL } from "../../utils/api";
-
-const buildImageUrl = (path) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
-};
+import { buildImageUrl } from "../../utils/imageUrl";
 
 export const useHomeLogic = () => {
   const [products, setProducts] = useState([]);

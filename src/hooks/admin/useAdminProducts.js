@@ -1,17 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import api, { API_URL } from "../../utils/api";
+import { API_URL } from "../../utils/api";
+import { buildImageUrl } from "../../utils/imageUrl";
 import { 
   getAllProducts, getAllCategories, getAllTypes, 
   createProduct, updateProduct, deleteProduct, 
-  updateCategory, updateType, toggleProductActive
+  updateCategory, updateType, toggleProductActive,
+  createCategory, createType
 } from "../../services/admin/productService";
-
-const buildImageUrl = (path) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
-};
 
 const normalizeProduct = (p) => ({
   ...p,
@@ -53,8 +49,8 @@ export const useAdminProducts = () => {
 
   const handleAddCategory = async (data) => {
     try {
-      const response = await api.post("/api/products/category", data);
-      const newCat = response.data?.data || response.data;
+      const response = await createCategory(data);
+      const newCat = response?.data || response;
       toast.success("Kategori baru berhasil ditambahkan");
       setCategories((prev) => [...prev, newCat]);
       return newCat;
@@ -66,8 +62,8 @@ export const useAdminProducts = () => {
 
   const handleAddType = async (data) => {
     try {
-      const response = await api.post("/api/products/type", data);
-      const newType = response.data?.data || response.data;
+      const response = await createType(data);
+      const newType = response?.data || response;
       toast.success("Satuan baru berhasil ditambahkan");
       setTypes((prev) => [...prev, newType]);
       return newType;
