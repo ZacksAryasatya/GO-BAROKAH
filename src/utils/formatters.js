@@ -1,15 +1,4 @@
-export const formatRupiah = (amount) => {
-  const numericValue = Number(amount); 
-  
-  if (!numericValue || isNaN(numericValue)) return "Rp 0";
-  
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(numericValue);
-};
+export { formatRupiah } from './formatCurrency';
 
 export const formatNumber = (num) => 
   (Number(num) || 0).toLocaleString("id-ID");

@@ -11,6 +11,7 @@ import StockAlertItem from "../../components/admin/StockAlertItem";
 
 import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
 import { useAdminProducts } from "../../hooks/admin/useAdminProducts";
+import { formatIDR as formatRupiahUtuh } from "../../utils/formatCurrency";
 
 const LoadingSkeleton = () => (
   <div className="flex h-screen bg-[#F8FAFC]">
@@ -56,14 +57,6 @@ const AdminDashboard = () => {
     const name = user?.username || user?.name || "Admin";
     return name.split(" ")[0];
   }, [user]);
-
-  const formatRupiahUtuh = (angka) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(angka || 0);
-  };
 
   const recentOrders = useMemo(() => {
     if (!orders || orders.length === 0) return [];

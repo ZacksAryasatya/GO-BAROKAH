@@ -1,11 +1,6 @@
 import { useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import {
-  getOmzet,
-  getNetProfit,
-  getCashFlow,
-  getExpenseAnalysis
-} from "../../services/owner/ownerService";
+import ownerService from "../../services/owner/ownerService";
 
 export const useOwnerAnalytics = () => {
   const [analytics, setAnalytics] = useState({
@@ -20,17 +15,17 @@ export const useOwnerAnalytics = () => {
     setIsLoading(true);
     try {
       const [omzetRes, profitRes, cashFlowRes, expenseRes] = await Promise.all([
-        getOmzet(params),
-        getNetProfit(params),
-        getCashFlow(params),
-        getExpenseAnalysis(params)
+        ownerService.getOmzet(params),
+        ownerService.getNetProfit(params),
+        ownerService.getCashFlow(params),
+        ownerService.getExpenseAnalysis(params)
       ]);
 
       setAnalytics({
-        omzet: omzetRes?.data?.data || omzetRes?.data || omzetRes,
-        netProfit: profitRes?.data?.data || profitRes?.data || profitRes,
-        cashFlow: cashFlowRes?.data?.data || cashFlowRes?.data || cashFlowRes,
-        expenseAnalysis: expenseRes?.data?.data || expenseRes?.data || expenseRes
+        omzet: omzetRes?.data || omzetRes,
+        netProfit: profitRes?.data || profitRes,
+        cashFlow: cashFlowRes?.data || cashFlowRes,
+        expenseAnalysis: expenseRes?.data || expenseRes
       });
     } catch (err) {
       toast.error(err?.response?.data?.message || err?.message || "Gagal memuat data analitik");

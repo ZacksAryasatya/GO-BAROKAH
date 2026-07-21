@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import orderService from '../../services/user/orderService';
 import { useCart } from '../../context/CartContext';
+import { formatIDR as formatCurrency } from '../../utils/formatCurrency';
 
 export const useHistoryLogic = () => {
   const navigate = useNavigate();
@@ -89,14 +90,6 @@ export const useHistoryLogic = () => {
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const handleCancel = async (orderId) => {
     try {

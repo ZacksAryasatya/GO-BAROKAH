@@ -48,3 +48,13 @@ export const toggleProductActive = async (id) => {
   const res = await api.patch(`/api/products/${id}/toggle-active`);
   return res.data;
 };
+
+export const createCategory = async (data) => {
+  const res = await api.post("/api/products/category", data);
+  return res.data;
+};
+
+export const createType = async (data) => {
+  const res = await api.post("/api/products/type", data);
+  return res.data;
+};

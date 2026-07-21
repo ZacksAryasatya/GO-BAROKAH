@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/auth/authService';
+import authService from '../../services/auth/authService';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 

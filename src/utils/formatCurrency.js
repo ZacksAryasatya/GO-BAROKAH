@@ -4,5 +4,8 @@ export const formatIDR = (amount) => {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
-  }).format(amount);
+  }).format(validAmount);
 };
+
+export const formatRupiah = formatIDR;
+export const formatFullCurrency = formatIDR;

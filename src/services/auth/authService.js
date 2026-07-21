@@ -1,6 +1,6 @@
 import api from '../../utils/api'; 
 
-export const authService = {
+const authService = {
   login: async (credentials) => {
     const response = await api.post('/api/auth/login', credentials);
     return response.data;
@@ -35,3 +35,5 @@ export const authService = {
     localStorage.removeItem('user_session'); 
   }
 };
+
+export default authService;

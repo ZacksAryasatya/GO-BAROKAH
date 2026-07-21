@@ -9,13 +9,13 @@ import { useHomeLogic } from "../../hooks/user/useHomeLogic";
 
 const HomePage = () => {
   const navigate = useNavigate();
-
-  // Midtrans redirect: cek flag di localStorage, kalau ada berarti user baru balik dari pembayaran
   useEffect(() => {
     const pendingPayment = localStorage.getItem('pendingPayment');
     if (pendingPayment) {
       localStorage.removeItem('pendingPayment');
-      navigate("/profile/orders", { replace: true });
+      setTimeout(() => {
+        navigate("/profile/orders", { replace: true });
+      }, 100);
     }
   }, [navigate]);
   const { 

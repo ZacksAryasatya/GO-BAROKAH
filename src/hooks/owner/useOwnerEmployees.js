@@ -1,11 +1,6 @@
 import { useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import {
-  getAllUsers,
-  getAllAdmins,
-  promoteUser,
-  demoteAdmin
-} from "../../services/owner/ownerService";
+import ownerService from "../../services/owner/ownerService";
 
 export const useOwnerEmployees = () => {
   const [users, setUsers] = useState([]);
@@ -17,11 +12,11 @@ export const useOwnerEmployees = () => {
     setIsLoading(true);
     try {
       const [usersRes, adminsRes] = await Promise.all([
-        getAllUsers(),
-        getAllAdmins()
+        ownerService.getAllUsers(),
+        ownerService.getAllAdmins()
       ]);
-      const usersData = usersRes?.data?.data || usersRes?.data || [];
-      const adminsData = adminsRes?.data?.data || adminsRes?.data || [];
+      const usersData = usersRes?.data || usersRes || [];
+      const adminsData = adminsRes?.data || adminsRes || [];
       
       setUsers(usersData);
       setAdmins(adminsData);
@@ -35,7 +30,7 @@ export const useOwnerEmployees = () => {
   const handlePromote = async (email) => {
     setActionLoading(true);
     try {
-      await promoteUser(email);
+      await ownerService.promoteUser(email);
       await fetchEmployees();
       toast.success(`Berhasil promote ${email} menjadi Admin`);
       return { success: true };
@@ -51,7 +46,7 @@ export const useOwnerEmployees = () => {
   const handleDemote = async (email) => {
     setActionLoading(true);
     try {
-      await demoteAdmin(email);
+      await ownerService.demoteAdmin(email);
       await fetchEmployees();
       toast.success(`Berhasil demote ${email} menjadi User`);
       return { success: true };
