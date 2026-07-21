@@ -54,9 +54,11 @@ const CheckoutPage = () => {
   }, [isPickup, setAlamatDetail]); 
 
   useEffect(() => {
+    const isMounted = { current: true };
     if (!isPickup && selectedAddressId) {
-      hitungOngkir(selectedAddressId);
+      hitungOngkir(selectedAddressId, isMounted);
     }
+    return () => { isMounted.current = false; };
   }, [selectedAddressId, isPickup, hitungOngkir]);
 
   const totalQuantity = cartItems?.reduce((sum, item) => sum + (item.qty || item.quantity), 0) || 0;

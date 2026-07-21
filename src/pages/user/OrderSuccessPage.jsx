@@ -21,7 +21,8 @@ const OrderSuccessPage = () => {
 
   const customerName = orderRaw.recipientName || orderRaw.customerName || "Pelanggan";
   const address = orderRaw.shippingAddress || orderRaw.address || "Ambil di Toko (Pangkalan Bun)";
-  const paymentMethod = orderRaw.paymentMethod || "Transfer Bank / VA"; 
+  const isPickup = orderRaw.fulfillmentMethod === "PICKUP" || orderRaw.isPickup;
+  const paymentMethod = orderRaw.paymentMethod || (isPickup ? "Bayar di Toko" : "Transfer Bank / VA"); 
   
   const subtotal = Number(orderRaw.itemsSubtotal || orderRaw.subtotal || 0);
   const shippingFee = Number(orderRaw.shippingFee || 0);

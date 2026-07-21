@@ -7,16 +7,17 @@ export const useOwnerExpenses = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchExpenses = useCallback(async (params = {}) => {
+  const fetchExpenses = useCallback(async (params = {}, isMounted = { current: true }) => {
     setIsLoading(true);
     try {
       const res = await ownerService.getAllExpenses(params);
+      if (!isMounted.current) return;
       const data = res?.data || res || [];
       setExpenses(data);
     } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || "Gagal memuat pengeluaran");
+      if (isMounted.current) toast.error(err?.response?.data?.message || err?.message || "Gagal memuat pengeluaran");
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) setIsLoading(false);
     }
   }, []);
 

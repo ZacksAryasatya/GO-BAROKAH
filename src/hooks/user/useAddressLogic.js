@@ -8,26 +8,31 @@ export const useAddressLogic = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  const fetchAddresses = useCallback(async () => {
+  const fetchAddresses = useCallback(async (isMounted = { current: true }) => {
     setIsLoading(true);
     try {
       const response = await addressService.getAddresses();
+      if (!isMounted.current) return;
       const actualData = response?.data || response;
       setAddresses(Array.isArray(actualData) ? actualData : []);
     } catch (err) {
-      console.error("Gagal fetch alamat:", err);
-      setAddresses([]);
+      if (isMounted.current) {
+        console.error("Gagal fetch alamat:", err);
+        setAddresses([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    const isMounted = { current: true };
     if (user) {
-      fetchAddresses();
+      fetchAddresses(isMounted);
     } else {
       setAddresses([]); 
     }
+    return () => { isMounted.current = false; };
   }, [fetchAddresses, user]); 
 
   const handleSaveAddress = async (formData, editId) => {
