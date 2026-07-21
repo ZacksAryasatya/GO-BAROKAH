@@ -53,7 +53,7 @@ export const useHistoryLogic = () => {
         const uiStatusMap = {
           PENDING: "Menunggu",
           PROCESSING: "Disiapkan",
-          SHIPPED: isPickup ? "Siap Diambil" : "Dikirim",
+          SHIPPED: isPickup ? "Dapat Diambil" : "Dikirim",
           COMPLETED: "Selesai",
           CANCELLED: "Dibatalkan",
         };

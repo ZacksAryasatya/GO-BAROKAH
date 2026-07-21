@@ -14,8 +14,15 @@ const DashboardOwner = () => {
   const { analytics, isLoading, fetchAnalytics } = useOwnerAnalytics();
 
   const today = new Date();
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const firstDay = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 1));
+  const lastDay = formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
 
   const [startDate, setStartDate] = React.useState(firstDay);
   const [endDate, setEndDate] = React.useState(lastDay);

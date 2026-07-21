@@ -43,7 +43,7 @@ export const useAdminOrders = () => {
       status: mapStatusToUI(o.status, isPickup),
       payment_status: o.paymentStatus,
       is_pickup: isPickup,
-      payment_method: o.paymentMethod || "Transfer Bank / VA",
+      payment_method: o.paymentMethod || (isPickup ? "Bayar di Toko" : "Transfer Bank / VA"),
       notes: o.notes || null,
       items: o.items?.map((item) => ({
         name: item.productName,
@@ -53,16 +53,17 @@ export const useAdminOrders = () => {
     };
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (isMounted = { current: true }) => {
     setIsLoading(true);
     try {
       const response = await adminOrderService.getAllOrders();
+      if (!isMounted.current) return;
       const dataAsli = response.data?.data || response.data || [];
       setOrders(dataAsli.map(normalizeOrder));
     } catch (error) {
-      console.error("Gagal mengambil data pesanan admin:", error);
+      if (isMounted.current) console.error("Gagal mengambil data pesanan admin:", error);
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) setIsLoading(false);
     }
   };
 
@@ -70,9 +71,20 @@ export const useAdminOrders = () => {
     try {
       const statusForAPI = mapStatusToAPI(newStatusUI);
       await adminOrderService.updateOrderStatus(orderId, statusForAPI);
+
+      if (statusForAPI === "COMPLETED") {
+        await adminOrderService.updatePaymentStatus(orderId, "PAID");
+      }
+
       setOrders((prev) =>
         prev.map((order) =>
-          order.id === orderId ? { ...order, status: newStatusUI } : order,
+          order.id === orderId
+            ? {
+                ...order,
+                status: newStatusUI,
+                payment_status: statusForAPI === "COMPLETED" ? "PAID" : order.payment_status,
+              }
+            : order,
         ),
       );
     } catch (error) {
@@ -82,7 +94,9 @@ export const useAdminOrders = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
+    const isMounted = { current: true };
+    fetchOrders(isMounted);
+    return () => { isMounted.current = false; };
   }, []);
 
   return { orders, isLoading, fetchOrders, handleUpdateStatus };

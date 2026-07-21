@@ -23,9 +23,11 @@ export const useCheckoutLogic = () => {
     if (user && user.username) {
       setNamaPenerima(user.username);
     }
+    const isMounted = { current: true };
     const loadDefaultAddress = async () => {
       try {
         const response = await addressService.getAddresses();
+        if (!isMounted.current) return;
         const addresses = response?.data || response;
         const defaultAddr = addresses.find(addr => addr.isDefault || addr.is_default);
         
@@ -33,11 +35,12 @@ export const useCheckoutLogic = () => {
           setAlamatDetail(defaultAddr.addressDetail || defaultAddr.address_detail || "");
         }
       } catch (err) {
-        console.error("Gagal ambil alamat otomatis:", err);
+        if (isMounted.current) console.error("Gagal ambil alamat otomatis:", err);
       }
     };
 
     if (user) loadDefaultAddress();
+    return () => { isMounted.current = false; };
   }, [user]);
 
   useEffect(() => {
@@ -47,7 +50,7 @@ export const useCheckoutLogic = () => {
     }
   }, [isPickup, rawSubtotal]);
 
-  const hitungOngkir = useCallback(async (addressId) => {
+  const hitungOngkir = useCallback(async (addressId, isMounted = { current: true }) => {
     if (!addressId || isPickup) {
       setRawShipping(0);
       setRawTotal(rawSubtotal);
@@ -57,17 +60,20 @@ export const useCheckoutLogic = () => {
     try {
       setIsLoadingShipping(true);
       const response = await orderService.calculateShippingFee(addressId);
+      if (!isMounted.current) return;
       
       if (response && response.data) {
         setRawShipping(response.data.shippingFee);
         setRawTotal(response.data.grandTotal);
       }
     } catch (error) {
-      console.error("Gagal kalkulasi ongkos kirim:", error);
-      setRawShipping(0);
-      setRawTotal(rawSubtotal);
+      if (isMounted.current) {
+        console.error("Gagal kalkulasi ongkos kirim:", error);
+        setRawShipping(0);
+        setRawTotal(rawSubtotal);
+      }
     } finally {
-      setIsLoadingShipping(false);
+      if (isMounted.current) setIsLoadingShipping(false);
     }
   }, [isPickup, rawSubtotal]);
 

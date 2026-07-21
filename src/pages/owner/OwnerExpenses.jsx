@@ -25,7 +25,9 @@ const OwnerExpenses = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
-    fetchExpenses();
+    const isMounted = { current: true };
+    fetchExpenses({}, isMounted);
+    return () => { isMounted.current = false; };
   }, [fetchExpenses]);
 
   useEffect(() => { setPage(1); }, [search]);
