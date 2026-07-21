@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CategorySection from '../../components/features/CategorySection';
 import DiscountSection from '../../components/features/DiscountSection';
 import FeaturedSection from '../../components/features/FeaturedSection';
@@ -7,6 +8,17 @@ import { Loader2 } from "lucide-react";
 import { useHomeLogic } from "../../hooks/user/useHomeLogic";
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Midtrans redirect: kalau ada query param dari Midtrans, langsung arahkan ke halaman riwayat pesanan
+  useEffect(() => {
+    const orderId = searchParams.get("order_id");
+    const transactionStatus = searchParams.get("transaction_status");
+    if (orderId || transactionStatus) {
+      navigate("/profile/orders", { replace: true });
+    }
+  }, [searchParams, navigate]);
   const { 
     loading, 
     categories, 

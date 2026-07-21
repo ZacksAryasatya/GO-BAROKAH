@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Shield, ShieldAlert, Users, Search, Loader2 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Shield, UserX, Loader2, Users, Menu, ShieldAlert } from "lucide-react";
 import OwnerSidebar from "../../components/owner/OwnerSidebar";
 import ConfirmModal from "../../components/forms/ConfirmModal";
 import { useOwnerEmployees } from "../../hooks/owner/useOwnerEmployees";
@@ -13,7 +13,8 @@ const OwnerEmployees = () => {
   } = useOwnerEmployees();
 
   const [search, setSearch] = useState("");
-  const [filterRole, setFilterRole] = useState("ALL"); 
+  const [filterRole, setFilterRole] = useState("ALL");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [isScrolled, setIsScrolled] = useState(false);
   const tableScrollRef = useRef(null);
@@ -85,20 +86,25 @@ const OwnerEmployees = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden text-[13px]">
-      <OwnerSidebar />
+      <OwnerSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-5 flex items-center justify-between z-10 flex-shrink-0">
-          <div>
-            <h2 className="text-2xl font-black tracking-tighter text-slate-800 uppercase leading-none">Pegawai</h2>
-            <p className="text-[10px] text-slate-400 font-black mt-1.5 uppercase tracking-[0.2em]">Manajemen Akun User & Admin</p>
+        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 md:py-5 flex flex-col md:flex-row md:items-center justify-between z-10 flex-shrink-0 gap-4 md:gap-0">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e]" onClick={() => setIsMobileOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <div>
+              <h2 className="text-xl md:text-2xl font-black tracking-tighter text-slate-800 uppercase leading-none">Pegawai</h2>
+              <p className="text-[10px] text-slate-400 font-black mt-1.5 uppercase tracking-[0.2em]">Manajemen Akun User & Admin</p>
+            </div>
           </div>
         </header>
 
-        <div className="p-8 flex-1 flex flex-col overflow-hidden">
+        <div className="p-4 md:p-8 flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Filter Bar */}
-          <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex items-center gap-2 transition-all focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20">
-            <div className="relative flex-1">
+          <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row items-stretch md:items-center gap-2 transition-all focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
                 type="text"
@@ -109,7 +115,7 @@ const OwnerEmployees = () => {
               />
             </div>
             <div className="h-8 w-px bg-slate-200 hidden md:block"></div>
-            <div className="flex gap-1 pr-2">
+            <div className="flex gap-1 pr-0 md:pr-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 custom-scrollbar-x">
               {['ALL', 'ADMIN', 'USER'].map(role => (
                 <button
                   key={role}
@@ -126,8 +132,10 @@ const OwnerEmployees = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden relative">
-            <div className={`absolute top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-md z-10 border-b transition-colors duration-300 ${isScrolled ? "border-slate-200" : "border-transparent"}`}>
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden relative min-h-0">
+            <div className="overflow-x-auto flex-1 flex flex-col min-h-0 custom-scrollbar-x">
+              <div className="min-w-[800px] flex-1 flex flex-col relative">
+                <div className={`absolute top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-md z-10 border-b transition-colors duration-300 ${isScrolled ? "border-slate-200" : "border-transparent"}`}>
               <div className="flex h-full items-center px-6">
                 <div className="w-[30%] text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama</div>
                 <div className="w-[30%] text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</div>
@@ -195,35 +203,35 @@ const OwnerEmployees = () => {
                 </div>
               )}
             </div>
-
-            <div className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                PAGE {page} OF {totalPages || 1}
-              </p>
-              <div className="flex gap-1.5">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
-                  <ChevronLeft size={16} />
-                </button>
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-      </main>
 
-      {confirmModal.isOpen && (
-        <ConfirmModal 
-          isOpen={confirmModal.isOpen} 
-          onClose={() => setConfirmModal({ isOpen: false, type: null, email: null, name: null })} 
-          onConfirm={onConfirmAction} 
-          title={confirmModal.type === "PROMOTE" ? "Promote ke Admin" : "Demote ke User"} 
-          message={`Apakah Anda yakin ingin menjadikan ${confirmModal.name} (${confirmModal.email}) sebagai ${confirmModal.type === "PROMOTE" ? "Admin" : "User"}?`} 
-          confirmText={confirmModal.type === "PROMOTE" ? "Promote" : "Demote"} 
-          confirmColor={confirmModal.type === "PROMOTE" ? "emerald" : "red"} 
-        />
-      )}
+        <div className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+            PAGE {page} OF {totalPages || 1}
+          </p>
+          <div className="flex gap-1.5">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+              <ChevronLeft size={16} />
+            </button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen} 
+        onClose={() => setConfirmModal({ isOpen: false, type: null, email: null, name: null })} 
+        onConfirm={onConfirmAction} 
+        title={confirmModal.type === "PROMOTE" ? "Promote ke Admin" : "Demote ke User"} 
+        message={`Apakah Anda yakin ingin menjadikan ${confirmModal.name} (${confirmModal.email}) sebagai ${confirmModal.type === "PROMOTE" ? "Admin" : "User"}?`} 
+        confirmText={confirmModal.type === "PROMOTE" ? "Promote" : "Demote"} 
+        confirmColor={confirmModal.type === "PROMOTE" ? "emerald" : "red"} 
+      />
     </div>
   );
 };

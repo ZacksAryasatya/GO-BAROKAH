@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { NAV_ITEMS } from "../../constants/adminConstants";
 import LogoutModal from "./LogoutModal"; 
 
-const AdminSidebar = ({ alertCount = 0 }) => {
+const AdminSidebar = ({ alertCount = 0, isMobileOpen, setIsMobileOpen }) => {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   
@@ -26,11 +26,19 @@ const AdminSidebar = ({ alertCount = 0 }) => {
 
   return (
     <>
-      <aside className={`${isMinimized ? "w-20" : "w-64"} h-screen sticky top-0 flex-shrink-0 flex flex-col bg-white py-8 font-sans border-r border-slate-200 transition-all duration-300 ease-in-out relative z-[60]`}>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[55] md:hidden transition-opacity"
+          onClick={() => setIsMobileOpen?.(false)}
+        />
+      )}
+
+      <aside className={`${isMinimized ? "md:w-20" : "md:w-64"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} fixed md:sticky inset-y-0 left-0 w-64 h-screen flex-shrink-0 flex flex-col bg-white py-8 font-sans border-r border-slate-200 transition-all duration-300 ease-in-out z-[60]`}>
         
         <button 
           onClick={() => setIsMinimized(!isMinimized)}
-          className="absolute -right-3 top-8 bg-white text-slate-400 hover:text-[#1a4d2e] w-6 h-6 flex items-center justify-center rounded-full shadow-md border border-slate-200 transition-colors z-50"
+          className="hidden md:flex absolute -right-3 top-8 bg-white text-slate-400 hover:text-[#1a4d2e] w-6 h-6 items-center justify-center rounded-full shadow-md border border-slate-200 transition-colors z-[70]"
           title={isMinimized ? "Perbesar Sidebar" : "Perkecil Sidebar"}
         >
           {isMinimized ? <ChevronRight size={14} strokeWidth={3} /> : <ChevronLeft size={14} strokeWidth={3} />}

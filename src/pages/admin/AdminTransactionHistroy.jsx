@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   ChevronLeft, ChevronRight, Search, Loader2, Wallet, Clock, 
-  CheckCircle2, XCircle, CreditCard, Calendar, Store, Truck, Package, Eye
+  CheckCircle2, XCircle, CreditCard, Calendar, Store, Truck, Package, Eye, Menu
 } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import OrderDetailModal from "../../components/admin/order/OrderDetailModal";
@@ -35,6 +35,7 @@ const AdminTransactionHistory = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const tableScrollRef = useRef(null);
 
   const openDetail = (order) => {
@@ -49,6 +50,12 @@ const AdminTransactionHistory = () => {
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [page]);
 
   const filteredData = useMemo(() => {
     return orders.filter((o) => {
@@ -67,20 +74,22 @@ const AdminTransactionHistory = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900">
-      <AdminSidebar />
+      <AdminSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header 
-          className="flex-shrink-0 transition-all duration-500 ease-in-out overflow-hidden" 
-          style={{ maxHeight: isScrolled ? "90px" : "400px" }}
-        >
-          <div className="px-8 pt-8 flex items-center justify-between">
-            <div className={`transition-all duration-500 ${isScrolled ? "opacity-0 -translate-y-10" : "opacity-100 translate-y-0"}`}>
-              <h1 className="text-xl font-black tracking-tight uppercase">Riwayat Pesanan</h1>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em]">Semua Riwayat Pesanan UD BAROKAH</p>
+        <div className="flex-shrink-0 bg-[#F8FAFC]">
+          <div className="px-4 md:px-8 pt-4 md:pt-8 flex items-center justify-between gap-4 bg-[#F8FAFC]">
+            <div className="flex items-center gap-3 md:gap-0">
+              <button className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e] relative z-50" onClick={() => setIsMobileOpen(true)}>
+                <Menu size={20} />
+              </button>
+              <div className="transition-all duration-500">
+                <h1 className="text-xl font-black tracking-tight uppercase">Riwayat Pesanan</h1>
+                <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em] hidden md:block">Semua Riwayat Pesanan UD BAROKAH</p>
+              </div>
             </div>
           </div>
 
-          <div className={`px-8 py-6 flex gap-4 items-center transition-all duration-500 ${isScrolled ? "-translate-y-12" : "translate-y-0"}`}>
+          <div className="px-4 md:px-8 py-4 md:py-6 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center bg-[#F8FAFC]">
             <SearchInput value={search} onChange={(val) => { setSearch(val); setPage(1); }} />
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
               {TABS.map(t => (
@@ -88,15 +97,15 @@ const AdminTransactionHistory = () => {
               ))}
             </div>
           </div>
-        </header>
-        <main className="flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
+        </div>
+        <main className="flex-1 px-4 md:px-8 pb-4 md:pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-auto custom-scrollbar" ref={tableScrollRef}>
-              <table className="w-full border-collapse">
-                <thead className="bg-slate-50/50 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100">
+              <table className="w-full border-collapse min-w-[700px]">
+                <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-100">
                   <tr>
                     {["ID", "Pelanggan", "Tanggal", "Pengiriman", "Pembayaran", "Total", "Status", "Aksi"].map((h) => (
-                      <th key={h} className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-left">{h}</th>
+                      <th key={h} className={`px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ${h === 'Aksi' ? 'text-right' : 'text-left'}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -110,17 +119,16 @@ const AdminTransactionHistory = () => {
                 </tbody>
               </table>
             </div>
-            <Pagination page={page} totalPages={totalPages} onPageChange={(p) => { setPage(p); tableScrollRef.current.scrollTop = 0; }} />
+            <Pagination page={page} totalPages={totalPages} onPageChange={(p) => setPage(p)} />
           </div>
         </main>
       </div>
 
-      {isModalOpen && (
-        <OrderDetailModal
-          order={selectedOrder}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <OrderDetailModal 
+        isOpen={isModalOpen}
+        order={selectedOrder} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };
@@ -202,21 +210,23 @@ const TableRow = ({ order, onOpenDetail }) => {
           {config?.icon} {order.status}
         </div>
       </td>
-      <td className="px-4 py-5">
-        <button
-          onClick={() => onOpenDetail(order)}
-          title="Detail Pesanan"
-          className="p-2.5 rounded-xl transition-all shadow-sm border active:scale-95 bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-300 flex items-center justify-center w-9 h-9"
-        >
-          <Eye size={14} />
-        </button>
+      <td className="px-4 py-5 text-right">
+        <div className="flex justify-end">
+          <button
+            onClick={() => onOpenDetail(order)}
+            title="Detail Pesanan"
+            className="p-2.5 rounded-xl transition-all shadow-sm border active:scale-95 bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-300 flex items-center justify-center w-9 h-9"
+          >
+            <Eye size={14} />
+          </button>
+        </div>
       </td>
     </tr>
   );
 };
 
 const Pagination = ({ page, totalPages, onPageChange }) => (
-  <footer className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
+  <footer className="px-4 md:px-8 py-4 border-t border-slate-50 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white flex-shrink-0">
     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Page {page} of {totalPages}</p>
     <div className="flex gap-1.5">
       <button disabled={page === 1} onClick={() => onPageChange(page - 1)} className="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 disabled:opacity-20 transition-all shadow-sm active:scale-95"><ChevronLeft size={16} /></button>

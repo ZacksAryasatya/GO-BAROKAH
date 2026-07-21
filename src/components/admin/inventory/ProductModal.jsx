@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { X, ImageIcon, Plus, Check, RotateCcw, Tag, Edit2 } from "lucide-react";
+import { X, ImageIcon, Plus, Check, RotateCcw, Tag, Edit2, ChevronDown } from "lucide-react";
 import Button from "../../common/Button";
+import CustomSelect from "../../common/CustomSelect";
 
 const INITIAL_FORM = {
   name: "",
@@ -57,10 +58,19 @@ const ProductModal = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ["stock", "price", "cost", "discount_amount", "category_id", "type_id"];
+    const numericFields = ["stock", "category_id", "type_id"];
     setForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name) ? (value === "" ? 0 : Number(value)) : value,
+    }));
+  };
+
+  const handleCurrencyChange = (e) => {
+    const { name, value } = e.target;
+    const numericValue = value.replace(/\D/g, "");
+    setForm((prev) => ({
+      ...prev,
+      [name]: numericValue ? Number(numericValue) : 0,
     }));
   };
 
@@ -93,13 +103,17 @@ const ProductModal = ({
     }
   };
 
+  const handleClose = () => {
+    setAnimate(false);
+    setTimeout(onClose, 300);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     try {
       await onSubmit(form);
-      setAnimate(false);
-      setTimeout(onClose, 300);
+      handleClose();
     } catch (err) {
       console.error("Gagal menyimpan produk:", err);
     } finally {
@@ -117,8 +131,8 @@ const ProductModal = ({
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div
-          className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${animate ? "opacity-100" : "opacity-0"}`}
-          onClick={isSaving ? null : onClose}
+          className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 ${animate ? "opacity-100" : "opacity-0"}`}
+          onClick={isSaving ? null : handleClose}
         />
 
         <form
@@ -134,7 +148,7 @@ const ProductModal = ({
                 Inventaris UD BAROKAH
               </p>
             </div>
-            <button type="button" onClick={onClose} disabled={isSaving} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:rotate-90 transition-transform duration-300">
+            <button type="button" onClick={handleClose} disabled={isSaving} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:rotate-90 transition-transform duration-300">
               <X size={20} />
             </button>
           </div>
@@ -168,10 +182,16 @@ const ProductModal = ({
                     </>
                   ) : (
                     <>
-                      <select required name="category_id" value={form.category_id} onChange={handleChange} className={inputClass}>
-                        <option value="">Pilih Kategori</option>
-                        {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
+                      <div className="flex-1">
+                        <CustomSelect
+                          name="category_id"
+                          value={form.category_id}
+                          onChange={handleChange}
+                          options={categories.map(c => ({ value: c.id, label: c.name }))}
+                          placeholder="Pilih Kategori"
+                          required
+                        />
+                      </div>
                       {form.category_id ? (
                         <button type="button" onClick={() => {
                           setCatAction("edit");
@@ -206,10 +226,16 @@ const ProductModal = ({
                     </>
                   ) : (
                     <>
-                      <select required name="type_id" value={form.type_id} onChange={handleChange} className={inputClass}>
-                        <option value="">Pilih Satuan</option>
-                        {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                      </select>
+                      <div className="flex-1">
+                        <CustomSelect
+                          name="type_id"
+                          value={form.type_id}
+                          onChange={handleChange}
+                          options={types.map(t => ({ value: t.id, label: t.name }))}
+                          placeholder="Pilih Satuan"
+                          required
+                        />
+                      </div>
                       {form.type_id ? (
                         <button type="button" onClick={() => {
                           setTypeAction("edit");
@@ -260,20 +286,26 @@ const ProductModal = ({
               </div>
               
               <div className={`transition-all duration-500 delay-[425ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                <label className={labelClass}>Harga Pokok / Modal (Rp)</label>
-                <input required name="cost" type="number" value={form.cost} onChange={handleChange} className={inputClass} />
+                <label className={labelClass}>Harga Pokok / Modal</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">Rp</span>
+                  <input required name="cost" type="text" value={form.cost ? form.cost.toLocaleString("id-ID") : ""} onChange={handleCurrencyChange} className={`${inputClass} pl-10`} placeholder="0" />
+                </div>
               </div>
               
               <div className={`transition-all duration-500 delay-[450ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                <label className={labelClass}>Harga Jual (Rp)</label>
-                <input required name="price" type="number" value={form.price} onChange={handleChange} className={inputClass} />
+                <label className={labelClass}>Harga Jual</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">Rp</span>
+                  <input required name="price" type="text" value={form.price ? form.price.toLocaleString("id-ID") : ""} onChange={handleCurrencyChange} className={`${inputClass} pl-10`} placeholder="0" />
+                </div>
               </div>
               
-              <div className={`md:col-span-2 transition-all duration-500 delay-[500ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                <label className={labelClass}>Potongan Harga / Diskon (Rp)</label>
+              <div className={`transition-all duration-500 delay-[500ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+                <label className={labelClass}>Potongan / Diskon</label>
                 <div className="relative">
-                  <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input name="discount_amount" type="number" value={form.discount_amount} onChange={handleChange} className={`${inputClass} pl-11`} placeholder="0" />
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">Rp</span>
+                  <input name="discount_amount" type="text" value={form.discount_amount ? form.discount_amount.toLocaleString("id-ID") : ""} onChange={handleCurrencyChange} className={`${inputClass} pl-10`} placeholder="0" />
                 </div>
               </div>
               
@@ -281,7 +313,7 @@ const ProductModal = ({
           </div>
           
           <div className={`px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex gap-4 transition-all duration-500 delay-[550ms] ${animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            <button type="button" onClick={onClose} className="flex-1 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
+            <button type="button" onClick={handleClose} className="flex-1 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
               Batal
             </button>
             <Button type="submit" isLoading={isSaving} variant="primary" className="flex-[1.5] py-4 rounded-2xl shadow-xl shadow-green-900/20">

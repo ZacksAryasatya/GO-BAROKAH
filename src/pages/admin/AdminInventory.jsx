@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon, Tag, Eye, EyeOff } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Package, Database, Loader2, Banknote, AlertCircle, Image as ImageIcon, Tag, Eye, EyeOff, Menu } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
 import ProductFilterBar from "../../components/admin/inventory/ProductFilterBar";
@@ -42,6 +42,7 @@ const AdminInventory = () => {
 
   const [search, setSearch] = useState("");
   const [activecat, setActivecat] = useState("Semua");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [modalMode, setModalMode] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -59,6 +60,12 @@ const AdminInventory = () => {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [page]);
+
   const filteredProducts = useMemo(() => products.filter((p) => {
     const pCategoryName = p.category?.name || p.category;
     return (activecat === "Semua" || pCategoryName === activecat) && p.name?.toLowerCase().includes(search.toLowerCase());
@@ -71,42 +78,52 @@ const AdminInventory = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      <AdminSidebar />
+      <AdminSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className={`flex-shrink-0 bg-[#F8FAFC] transition-all duration-500 ease-in-out relative ${isScrolled ? "overflow-hidden z-10" : "overflow-visible z-50"}`} style={{ maxHeight: isScrolled ? "90px" : "500px" }}>
-          <div className="flex items-center justify-between px-8 pt-8 relative z-20">
-            <div className={`transition-all duration-500 ${isScrolled ? "opacity-0 -translate-y-10" : "opacity-100 translate-y-0"}`}>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">Inventaris</h1>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em]">Sistem Inventaris UD BAROKAH</p>
+        <div className="flex-shrink-0 bg-[#F8FAFC] relative z-50">
+          <div className="flex items-center justify-between px-4 md:px-8 pt-4 md:pt-8 relative z-20 bg-[#F8FAFC]">
+            <div className="flex items-center gap-3 md:gap-0">
+              <button className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e] relative z-50" onClick={() => setIsMobileOpen(true)}>
+                <Menu size={20} />
+              </button>
+              <div className="transition-all duration-500">
+                <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight uppercase">Inventaris</h1>
+                <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-[0.2em] hidden md:block">Sistem Inventaris UD BAROKAH</p>
+              </div>
             </div>
-            <button onClick={() => openModal("create")} className="flex items-center gap-2 bg-[#1a4d2e] text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg active:scale-95 transition-all">
+            <button onClick={() => openModal("create")} className="flex items-center gap-2 bg-[#1a4d2e] text-white px-4 md:px-5 py-2.5 md:py-3 rounded-xl text-[10px] font-black uppercase shadow-lg active:scale-95 transition-all">
               <Plus size={14} strokeWidth={3} />
-              <span className={isScrolled ? "hidden" : "block"}>Produk Baru</span>
+              <span className={isScrolled ? "hidden md:block" : "block"}>Produk Baru</span>
             </button>
           </div>
-          <div className={`relative z-30 grid grid-cols-1 md:grid-cols-2 gap-5 px-8 py-6 transition-all duration-500 ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-[140px]" : "opacity-100 scale-100 mb-0"}`}>
-            {stats.map((s) => <InventoryStatCard key={s.label} {...s} />)}
+          <div 
+            className={`transition-all duration-500 ease-in-out ${isScrolled ? 'overflow-hidden' : 'overflow-visible relative z-40'}`}
+            style={{ maxHeight: isScrolled ? "0px" : "500px", opacity: isScrolled ? 0 : 1 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 px-4 md:px-8 py-4 md:py-6">
+                {stats.map((s) => <InventoryStatCard key={s.label} {...s} />)}
+            </div>
           </div>
-          <div className={`relative z-20 px-8 py-2 transition-all duration-500 ${isScrolled ? "-translate-y-10" : "translate-y-0"}`}>
+          <div className="relative z-20 px-4 md:px-8 py-2 bg-[#F8FAFC]">
             <ProductFilterBar search={search} onSearchChange={setSearch} activecat={activecat} onCatChange={setActivecat} categories={categories} />
           </div>
         </div>
 
-        <div className="relative z-10 flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
+        <div className="relative z-10 flex-1 px-4 md:px-8 pb-4 md:pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-auto custom-scrollbar" ref={tableScrollRef}>
-              <table className="w-full border-collapse min-h-full">
-                <thead className="bg-slate-50/50 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100">
+              <table className="w-full border-collapse min-h-full min-w-[700px]">
+                <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-100">
                   <tr>
-                    {["Produk", "Kategori", "Stok", "Harga", "Aksi"].map((h) => (
-                      <th key={h} className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-left">{h}</th>
+                    {["ID", "Produk", "Kategori", "Stok", "Harga", "Aksi"].map((h) => (
+                      <th key={h} className={`px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ${h === 'Aksi' ? 'text-right' : 'text-left'}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={5} className="py-24 text-center">
+                      <td colSpan={6} className="py-24 text-center">
                         <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-2" />
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Loading...</p>
                       </td>
@@ -117,7 +134,12 @@ const AdminInventory = () => {
                         const hasDiscount = p.discount_amount > 0 && p.final_price > 0 && p.final_price !== p.price;
                         return (
                           <tr key={p.id} className={`hover:bg-slate-50/50 h-[73px] transition-colors ${!p.is_active ? "opacity-50 grayscale" : ""}`}>
-                            <td className="px-8 py-4">
+                            <td className="px-4 py-4">
+                              <span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md whitespace-nowrap">
+                                #{p.id}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
                               <div className="flex items-center gap-4">
                                 <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center relative">
                                   {!p.is_active && (
@@ -139,22 +161,21 @@ const AdminInventory = () => {
                                 <div className="flex flex-col min-w-0">
                                   <p className="font-bold text-slate-900 text-xs uppercase truncate">{p.name}</p>
                                   <p className="text-[9px] text-slate-400 font-medium truncate w-40">{p.description || "No description available"}</p>
-                                  <p className="text-[9px] text-slate-400 font-bold uppercase">ID: {String(p.id).slice(-6)}</p>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-8 py-4">
+                            <td className="px-4 py-4">
                               <span className="text-[9px] font-black text-blue-600 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100/50 uppercase">
                                 {p.category?.name || p.category}
                               </span>
                             </td>
-                            <td className="px-8 py-4">
+                            <td className="px-4 py-4">
                               <div className="flex flex-col">
                                 <span className={`font-black text-xs ${Number(p.stock) <= 5 ? "text-red-500" : "text-slate-700"}`}>{p.stock}</span>
                                 <span className="text-[9px] text-slate-400 font-bold uppercase">{p.type?.name || p.unit}</span>
                               </div>
                             </td>
-                            <td className="px-8 py-4">
+                            <td className="px-4 py-4">
                               <div className="flex flex-col gap-0.5">
                                 {hasDiscount ? (
                                   <>
@@ -181,8 +202,8 @@ const AdminInventory = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-8 py-4">
-                              <div className="flex gap-2">
+                            <td className="px-4 py-4 text-right">
+                              <div className="flex justify-end gap-2">
                                 <button 
                                   onClick={() => handleToggleActive(p.id)} 
                                   className={`p-2.5 rounded-xl active:scale-90 transition-all ${
@@ -219,7 +240,7 @@ const AdminInventory = () => {
                 </tbody>
               </table>
             </div>
-            <footer className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white flex-shrink-0">
+            <footer className="px-4 md:px-8 py-4 border-t border-slate-50 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white flex-shrink-0">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Page {page} of {totalPages}</p>
               <div className="flex gap-1.5">
                 <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 disabled:opacity-20 active:scale-95 transition-all">
@@ -245,7 +266,7 @@ const AdminInventory = () => {
           onAddType={handleAddType}
           onEditCategory={handleEditCategory} 
           onEditType={handleEditType}
-          onSubmit={modalMode === "create" ? handleCreate : (data) => handleUpdate(selected.id, data)}
+          onSubmit={modalMode === "create" ? handleCreate : (data) => handleUpdate(selected?.id, data)}
         />
       )}
 

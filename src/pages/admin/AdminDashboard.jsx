@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, AlertTriangle, Search, Loader2, XCircle } from "lucide-react";
+import { ArrowRight, AlertTriangle, Loader2, XCircle, Menu } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 import { STAT_CONFIG } from "../../constants/adminConstants";
@@ -45,7 +45,7 @@ const ErrorState = ({ message }) => (
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const { orders, isLoading: ordersLoading } = useAdminOrders();
   const { products, isLoading: productsLoading } = useAdminProducts();
@@ -69,15 +69,6 @@ const AdminDashboard = () => {
     if (!orders || orders.length === 0) return [];
     
     let filteredOrders = orders;
-    
-    if (search) {
-      const lowerSearch = search.toLowerCase();
-      filteredOrders = filteredOrders.filter(o => 
-        o.customer_name?.toLowerCase().includes(lowerSearch) ||
-        o.id.toString().includes(search) ||
-        o.order_number?.toLowerCase().includes(lowerSearch)
-      );
-    }
 
     return filteredOrders.slice(0, 5).map(o => ({
       id: o.id, 
@@ -86,7 +77,7 @@ const AdminDashboard = () => {
       total: formatRupiahUtuh(o.total_price),
       status: o.status
     }));
-  }, [orders, search]);
+  }, [orders]);
 
   const CRITICAL_LIMIT = 10;
 
@@ -131,31 +122,26 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden text-[13px]">
-      <AdminSidebar user={user} alertCount={lowStockCount} />
+      <AdminSidebar user={user} alertCount={lowStockCount} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-[72px] bg-white border-b border-slate-100 px-8 flex items-center justify-between flex-shrink-0 z-10">
-          <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">DASHBOARD ADMIN</h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-              Selamat datang kembali, <span className="text-emerald-600">{firstName}</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative group hidden md:block">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari transaksi..."
-                className="pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl w-64 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner"
-              />
+        <header className="bg-white border-b border-slate-100 px-4 md:px-8 py-4 md:py-0 md:h-[72px] flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 z-10 gap-4 md:gap-0">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e]" onClick={() => setIsMobileOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <div>
+              <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">DASHBOARD ADMIN</h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                Selamat datang kembali, <span className="text-emerald-600">{firstName}</span>
+              </p>
             </div>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          </div>
         </header>
-        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4 md:py-8 space-y-6 md:space-y-8">
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {STAT_CONFIG.map((config) => (
               <StatCard
@@ -167,7 +153,7 @@ const AdminDashboard = () => {
           </section>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-10">
             <section className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[520px]">
-              <div className="flex items-center justify-between px-8 py-6 border-b border-slate-50 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-6 border-b border-slate-50 flex-shrink-0">
                 <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Transaksi Terakhir</h3>
                 <button 
                   onClick={() => navigate("/admin/orders")}
@@ -188,13 +174,13 @@ const AdminDashboard = () => {
               </div>
             </section>
             <section className="bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[520px]">
-              <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50 flex-shrink-0">
+              <div className="flex items-center gap-3 px-4 md:px-8 py-4 md:py-6 border-b border-slate-50 flex-shrink-0">
                 <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500">
                   <AlertTriangle size={20} />
                 </div>
                 <div>
                   <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Stok Kritis</h3>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Butuh pengadaan segera</p>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">List Stock Yang Kritis</p>
                 </div>
               </div>
               <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">

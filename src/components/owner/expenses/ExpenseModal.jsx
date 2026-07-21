@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Calendar as CalendarIcon, UploadCloud, FileType, CheckCircle2 } from "lucide-react";
 import Button from "../../common/Button";
+import DatePicker from "../../common/DatePicker";
+import CustomSelect from "../../common/CustomSelect";
 
 const INITIAL_FORM = {
   category: "OTHER",
@@ -57,19 +59,24 @@ const ExpenseModal = ({
     }));
   };
 
+  const handleClose = () => {
+    setAnimate(false);
+    setTimeout(onClose, 300);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     const res = await onSubmit(form);
     setIsSaving(false);
-    if (res?.success) onClose();
+    if (res?.success) handleClose();
   };
 
   if (!shouldRender) return null;
 
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${animate ? "opacity-100" : "opacity-0"}`}>
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 ${animate ? "opacity-100" : "opacity-0"}`} onClick={handleClose} />
       
       <div className={`relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300 ${animate ? "scale-100 translate-y-0" : "scale-95 translate-y-4"}`}>
         {/* Header */}
@@ -82,7 +89,7 @@ const ExpenseModal = ({
               Catat operasional toko
             </p>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+          <button onClick={handleClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -92,17 +99,14 @@ const ExpenseModal = ({
           <form id="expense-form" onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Kategori</label>
-              <select
+              <CustomSelect
                 name="category"
                 value={form.category}
                 onChange={handleChange}
+                options={CATEGORIES}
+                placeholder="Pilih Kategori"
                 required
-                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
@@ -133,14 +137,13 @@ const ExpenseModal = ({
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Tanggal</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={form.date}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                />
+                <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all">
+                  <DatePicker
+                    value={form.date}
+                    onChange={(date) => handleChange({ target: { name: 'date', value: date } })}
+                    className="text-slate-800 text-sm font-bold"
+                  />
+                </div>
               </div>
             </div>
           </form>
@@ -148,7 +151,7 @@ const ExpenseModal = ({
 
         {/* Footer */}
         <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl mt-auto">
-          <Button variant="secondary" onClick={onClose} disabled={isSaving} className="px-6 py-2.5 rounded-xl text-xs">
+          <Button variant="secondary" onClick={handleClose} disabled={isSaving} className="px-6 py-2.5 rounded-xl text-xs">
             Batal
           </Button>
           <Button

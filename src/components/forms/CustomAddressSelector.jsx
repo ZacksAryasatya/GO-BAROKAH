@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CustomAddressSelector = ({ 
   userAddresses, 
@@ -50,10 +51,22 @@ const CustomAddressSelector = ({
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-2 max-h-60 overflow-y-auto overflow-x-hidden origin-top animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-2 max-h-80 overflow-y-auto overflow-x-hidden origin-top animate-in fade-in zoom-in-95 duration-200">
             {userAddresses.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-gray-500 font-medium text-center">
-                Belum ada alamat tersimpan
+              <div className="px-6 py-8 flex flex-col items-center justify-center text-center">
+                <div className="w-12 h-12 bg-emerald-50 text-[#2D5A43] rounded-full flex items-center justify-center mb-3">
+                  <MapPin size={24} />
+                </div>
+                <h4 className="text-sm font-black text-gray-800 mb-1">Belum Ada Alamat</h4>
+                <p className="text-[10px] text-gray-500 font-medium px-4 mb-5 leading-relaxed">
+                  Silakan tambah alamat pengiriman terlebih dahulu untuk melanjutkan proses pesanan Anda.
+                </p>
+                <Link
+                  to="/profile/address"
+                  className="bg-[#2D5A43] hover:bg-[#204030] text-white text-[10px] font-bold uppercase tracking-wider px-6 py-2.5 rounded-full transition-all shadow-md hover:shadow-lg active:scale-95"
+                >
+                  Tambah Alamat Baru
+                </Link>
               </div>
             ) : (
               userAddresses.map((addr) => (

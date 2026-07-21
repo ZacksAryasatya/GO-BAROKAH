@@ -32,7 +32,7 @@ export const getCashFlow = (params) => {
   return api.get("/api/owner/analytics/cash-flow", { params });
 };
 
-export const getCostAnalysis = (params) => {
+export const getExpenseAnalysis = (params) => {
   return api.get("/api/owner/analytics/cost-analysis", { params });
 };
 

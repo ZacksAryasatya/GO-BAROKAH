@@ -32,8 +32,8 @@ const StockAlertItem = ({ item }) => {
       </div>
       
       {stock <= 5 && (
-        <p className="text-[9px] font-black text-red-400 mt-2 uppercase animate-pulse">
-          ⚠️ Stok Kritis - Segera Restock
+        <p className="text-[9px] font-black text-red-400 mt-2 uppercase">
+          Stok Kritis - Segera Restock
         </p>
       )}
     </article>

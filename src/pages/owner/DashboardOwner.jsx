@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
-import { DollarSign, TrendingUp, TrendingDown, Activity, Package } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { DollarSign, TrendingUp, TrendingDown, Activity, Package, Menu } from "lucide-react";
+import DatePicker from "../../components/common/DatePicker";
 import OwnerSidebar from "../../components/owner/OwnerSidebar";
 import StatCard from "../../components/admin/dashboard/StatCard";
 import { useOwnerAnalytics } from "../../hooks/owner/useOwnerAnalytics";
@@ -18,6 +19,7 @@ const DashboardOwner = () => {
 
   const [startDate, setStartDate] = React.useState(firstDay);
   const [endDate, setEndDate] = React.useState(lastDay);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   React.useEffect(() => {
     fetchAnalytics({ startDate: firstDay, endDate: lastDay });
@@ -32,7 +34,7 @@ const DashboardOwner = () => {
     return name.split(" ")[0];
   }, [user]);
 
-  const { omzet, netProfit, cashFlow, costAnalysis } = analytics;
+  const { omzet, netProfit, cashFlow, expenseAnalysis } = analytics;
 
   const getStatusColor = (status) => {
     if (status === "POSITIVE") return "text-emerald-500 bg-emerald-50";
@@ -69,36 +71,47 @@ const DashboardOwner = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden text-[13px]">
-      <OwnerSidebar />
+      <OwnerSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
       <main className="flex-1 flex flex-col relative min-w-0 overflow-hidden">
         {/* HEADER */}
-        <header className="bg-white px-8 py-5 flex items-center justify-between z-10 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-0.5">DASHBOARD OWNER</h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-              Selamat Datang, {firstName}
-            </p>
+        <header className="bg-white px-4 md:px-8 py-4 md:py-5 flex flex-col md:flex-row md:items-center justify-between z-10 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-4 md:gap-0">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button 
+              className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e]"
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <h1 className="text-lg md:text-2xl font-black text-slate-800 tracking-tight mb-0.5">DASHBOARD OWNER</h1>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+                Selamat Datang, {firstName}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <input 
-                type="date" 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex flex-1 items-center justify-between bg-slate-50 p-1.5 rounded-xl border border-slate-100 min-w-0">
+              <DatePicker 
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-600 outline-none px-2 cursor-pointer"
+                onChange={setStartDate}
+                className="text-xs font-bold text-slate-700"
+                placeholder="Start Date"
+                label="Start Date"
               />
-              <span className="text-slate-300">-</span>
-              <input 
-                type="date" 
+              <div className="h-6 w-px bg-slate-200 mx-1 flex-shrink-0"></div>
+              <DatePicker 
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-600 outline-none px-2 cursor-pointer"
+                onChange={setEndDate}
+                className="text-xs font-bold text-slate-700"
+                placeholder="End Date"
+                align="right"
+                label="End Date"
               />
             </div>
             <button 
               onClick={handleFilter}
-              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all"
+              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 sm:py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all w-full sm:w-auto self-stretch sm:self-auto flex items-center justify-center"
             >
               Filter
             </button>
@@ -106,7 +119,7 @@ const DashboardOwner = () => {
         </header>
 
         {/* CONTENT */}
-        <div className="p-8 flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+        <div className="p-4 md:p-8 flex-1 flex flex-col overflow-y-auto custom-scrollbar overflow-x-hidden">
           {/* STATS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatCard 
@@ -118,8 +131,8 @@ const DashboardOwner = () => {
               statData={{ value: formatIDR(netProfit?.filter_3?.value || 0) }} 
             />
             <StatCard 
-              config={{ label: "Total Cost", icon: TrendingDown, variant: "red", key: "revenue" }} 
-              statData={{ value: formatIDR(costAnalysis?.total_cost || 0) }} 
+              config={{ label: "Total Expenses", icon: TrendingDown, variant: "red", key: "revenue" }} 
+              statData={{ value: formatIDR(expenseAnalysis?.total_cost || 0) }} 
             />
             <StatCard 
               config={{ 
@@ -203,8 +216,8 @@ const DashboardOwner = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {costAnalysis?.breakdown?.length > 0 ? (
-                    costAnalysis.breakdown.map((item, idx) => (
+                  {expenseAnalysis?.breakdown?.length > 0 ? (
+                    expenseAnalysis.breakdown.map((item, idx) => (
                       <div key={idx}>
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">{item.category}</span>

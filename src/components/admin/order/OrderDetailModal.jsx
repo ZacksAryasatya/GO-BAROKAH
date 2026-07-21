@@ -5,7 +5,7 @@ import {
   CheckCircle2, AlertCircle 
 } from "lucide-react";
 
-const OrderDetailModal = ({ order, onClose }) => {
+const OrderDetailModal = ({ isOpen, order, onClose }) => {
   const [animate, setAnimate] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -18,7 +18,7 @@ const OrderDetailModal = ({ order, onClose }) => {
   };
 
   useEffect(() => {
-    if (order) {
+    if (isOpen) {
       setShouldRender(true);
       const timer = setTimeout(() => setAnimate(true), 10);
       return () => clearTimeout(timer);
@@ -27,7 +27,9 @@ const OrderDetailModal = ({ order, onClose }) => {
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [order]);
+  }, [isOpen]);
+
+  if (!shouldRender || !order) return null;
 
   const handleClose = () => {
     setAnimate(false);

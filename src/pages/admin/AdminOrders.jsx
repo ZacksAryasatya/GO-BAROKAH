@@ -17,6 +17,7 @@ import {
   Store,
   Ban,
   Inbox,
+  Menu
 } from "lucide-react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import InventoryStatCard from "../../components/admin/inventory/InventoryStatCard";
@@ -84,6 +85,7 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const tableScrollRef = useRef(null);
 
@@ -102,6 +104,12 @@ const AdminOrders = () => {
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [page]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
@@ -199,7 +207,7 @@ const AdminOrders = () => {
     const disabledBtnClass = "p-2.5 rounded-xl transition-all shadow-sm border opacity-50 cursor-not-allowed bg-slate-50 text-slate-400 border-slate-200 flex items-center justify-center";
 
     return (
-      <div className="flex gap-2">
+      <div className="flex justify-end gap-2">
         <button
           onClick={() => openDetail(order)}
           title="Detail Pesanan"
@@ -266,27 +274,30 @@ const AdminOrders = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900">
-      <AdminSidebar />
+      <AdminSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header
-          className="flex-shrink-0 transition-all duration-500 ease-in-out overflow-hidden"
-          style={{ maxHeight: isScrolled ? "90px" : "400px" }}
-        >
-          <div className="px-8 pt-8 flex justify-between items-center">
-            <div
-              className={`transition-all duration-500 ${isScrolled ? "opacity-0 -translate-y-10" : "opacity-100"}`}
-            >
-              <h1 className="text-xl font-black uppercase tracking-tight">
-                Kelola Pesanan
-              </h1>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
-                Monitoring Pesanan UD BAROKAH
-              </p>
+        <div className="flex-shrink-0 bg-[#F8FAFC] relative z-50">
+          <div className="px-4 md:px-8 pt-4 md:pt-8 flex justify-between items-center gap-4 bg-[#F8FAFC] relative z-20">
+            <div className="flex items-center gap-3 md:gap-0">
+              <button className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-[#1a4d2e] relative z-50" onClick={() => setIsMobileOpen(true)}>
+                <Menu size={20} />
+              </button>
+              <div className="transition-all duration-500">
+                <h1 className="text-lg md:text-xl font-black uppercase tracking-tight">
+                  Kelola Pesanan
+                </h1>
+                <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest hidden md:block">
+                  Monitoring Pesanan UD BAROKAH
+                </p>
+              </div>
             </div>
           </div>
-          <div
-            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 px-8 py-6 transition-all duration-500 ${isScrolled ? "opacity-0 scale-95 pointer-events-none -mb-28" : "opacity-100 mb-0"}`}
+          
+          <div 
+            className={`transition-all duration-500 ease-in-out ${isScrolled ? 'overflow-hidden' : 'overflow-visible relative z-40'}`}
+            style={{ maxHeight: isScrolled ? "0px" : "500px", opacity: isScrolled ? 0 : 1 }}
           >
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 px-4 md:px-8 py-4 md:py-6">
             <InventoryStatCard
               label="Total"
               value={stats.total}
@@ -323,9 +334,10 @@ const AdminOrders = () => {
               icon={<CheckCircle2 size={14} />}
               iconBg="bg-emerald-50 text-emerald-600"
             />
+            </div>
           </div>
           <div
-            className={`px-8 py-2 flex gap-4 items-center transition-all duration-500 ${isScrolled ? "-translate-y-12" : ""}`}
+            className={`px-4 md:px-8 py-2 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center bg-[#F8FAFC] relative z-20`}
           >
             <div className="relative flex-1 group">
               <Search
@@ -358,15 +370,15 @@ const AdminOrders = () => {
               ))}
             </div>
           </div>
-        </header>
-        <main className="flex-1 px-8 pb-8 flex flex-col min-h-0 mt-2">
+        </div>
+        <main className="flex-1 px-4 md:px-8 pb-4 md:pb-8 flex flex-col min-h-0 mt-2">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex-1 flex flex-col overflow-hidden">
             <div
-              className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar" 
+              className="flex-1 overflow-auto custom-scrollbar" 
               ref={tableScrollRef}
             >
-              <table className="w-full">
-                <thead className="bg-slate-50/50 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100">
+              <table className="w-full border-collapse min-w-[700px]">
+                <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-100">
                   <tr>
                     {[
                       "ID",
@@ -379,7 +391,7 @@ const AdminOrders = () => {
                     ].map((h) => (
                       <th
                         key={h}
-                        className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-left"
+                        className={`px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest ${h === "Aksi" ? "text-right" : "text-left"}`}
                       >
                         {h}
                       </th>
@@ -411,12 +423,12 @@ const AdminOrders = () => {
                             key={o.id}
                             className="hover:bg-slate-50/50 transition-colors h-[68px]"
                           >
-                            <td className="px-8 py-5">
-                              <span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
+                            <td className="px-4 py-5">
+                              <span className="text-[10px] font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md whitespace-nowrap">
                                 #{o.id}
                               </span>
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-4 py-5">
                               <div className="flex flex-col">
                                 <span className="text-xs font-bold uppercase truncate tracking-tight">
                                   {o.customer_name}
@@ -426,13 +438,13 @@ const AdminOrders = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-8 py-5 text-[10px] font-bold text-slate-500 uppercase">
+                            <td className="px-4 py-5 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">
                               {o.created_at}
                             </td>
-                            <td className="px-8 py-5 text-xs font-black text-slate-900">
+                            <td className="px-4 py-5 text-xs font-black text-slate-900 whitespace-nowrap">
                               {formatFullCurrency(o.total_price || o.total_amount || 0)}
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-4 py-5">
                               <div
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${
                                   isPaid 
@@ -445,14 +457,14 @@ const AdminOrders = () => {
                                 {isPaid ? 'Lunas' : o.is_pickup ? 'Bayar di Toko' : 'Belum Dibayar'}
                               </div>
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-4 py-5">
                               <div
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider ${STATUS_CONFIG[o.status]?.bg} ${STATUS_CONFIG[o.status]?.text} ${STATUS_CONFIG[o.status]?.border}`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${STATUS_CONFIG[o.status]?.bg} ${STATUS_CONFIG[o.status]?.text} ${STATUS_CONFIG[o.status]?.border}`}
                               >
                                 {STATUS_CONFIG[o.status]?.icon} {o.status}
                               </div>
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-4 py-5 text-right">
                               <ActionButtons order={o} />
                             </td>
                           </tr>
@@ -472,7 +484,7 @@ const AdminOrders = () => {
                 </tbody>
               </table>
             </div>
-            <footer className="px-8 py-4 border-t border-slate-50 flex items-center justify-between bg-white">
+            <footer className="px-4 md:px-8 py-4 border-t border-slate-50 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                 Page {page} of {totalPages}
               </p>
@@ -497,12 +509,11 @@ const AdminOrders = () => {
         </main>
       </div>
 
-      {isModalOpen && (
-        <OrderDetailModal
-          order={selectedOrder}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <OrderDetailModal
+        isOpen={isModalOpen}
+        order={selectedOrder}
+        onClose={() => setIsModalOpen(false)}
+      />
 
       <ConfirmModal
         isOpen={!!confirmAction}
