@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Package, ClipboardList, History, ShoppingCart, Users, DollarSign,
-  Truck, Store, AlertTriangle 
+  Truck, Store, AlertTriangle, Banknote
 } from "lucide-react";
 
 export const NAV_ITEMS = Object.freeze([
@@ -8,6 +8,7 @@ export const NAV_ITEMS = Object.freeze([
   { id: "inventory", label: "Inventaris", icon: Package,         path: "/admin/inventory"  },
   { id: "orders",    label: "Pesanan",    icon: ClipboardList,   path: "/admin/orders"     },
   { id: "transactions", label: "Riwayat Pesanan", icon: History, path: "/admin/transactions" },
+  { id: "cash-sales", label: "Riwayat Pembayaran Kasir", icon: Banknote, path: "/admin/cash-sales" },
 ]);
 
 export const STAT_CONFIG = Object.freeze([

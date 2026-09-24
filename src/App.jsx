@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminOrders from "./pages/admin/AdminOrders"; 
 import AdminTransactionHistory from "./pages/admin/AdminTransactionHistory"; 
+import AdminCashSales from "./pages/admin/AdminCashSales";
 
 import DashboardOwner from "./pages/owner/DashboardOwner"; 
 import OwnerExpenses from "./pages/owner/OwnerExpenses";
@@ -69,6 +70,7 @@ function App() {
             <Route path="/admin/inventory" element={<AdminInventory />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/transactions" element={<AdminTransactionHistory />} />
+            <Route path="/admin/cash-sales" element={<AdminCashSales />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={["owner"]} />}>
